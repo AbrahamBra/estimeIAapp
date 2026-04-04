@@ -1,0 +1,13 @@
+@import 'tailwindcss';
+@import 'leaflet/dist/leaflet.css';
+
+@theme {
+  --color-ivory: oklch(0.97 0.01 90);
+  --color-navy: oklch(0.25 0.06 230);
+  --color-sage: oklch(0.58 0.14 155);
+  --color-dark-navy: oklch(0.15 0.04 230);
+
+  --font-display: 'Playfair Display', serif;
+  --font-body: 'Inter', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+}
