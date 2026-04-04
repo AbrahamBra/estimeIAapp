@@ -45,6 +45,19 @@ async function fetchPage(
   return { data: json.data ?? [], total: json.meta?.total ?? 0 };
 }
 
+function filterByIQR(comparables: Comparable[]): Comparable[] {
+  if (comparables.length < 4) return comparables;
+
+  const prices = comparables.map((c) => c.prix_m2).sort((a, b) => a - b);
+  const q1 = prices[Math.floor(prices.length * 0.25)];
+  const q3 = prices[Math.floor(prices.length * 0.75)];
+  const iqr = q3 - q1;
+  const lower = q1 - config.IQR_MULTIPLIER * iqr;
+  const upper = q3 + config.IQR_MULTIPLIER * iqr;
+
+  return comparables.filter((c) => c.prix_m2 >= lower && c.prix_m2 <= upper);
+}
+
 export async function fetchDvfComparables(params: FetchDvfParams): Promise<Comparable[]> {
   const { postcode, propertyType, lat, lon, radiusM, surfaceM2 } = params;
   const seenMutations = new Map<string, Comparable>();
@@ -59,6 +72,10 @@ export async function fetchDvfComparables(params: FetchDvfParams): Promise<Compa
 
       const surface = getSurface(row);
       if (surface == null || surface <= 0) continue;
+
+      // Absolute price/m² sanity bounds
+      const prixM2 = row.valeur_fonciere / surface;
+      if (prixM2 < config.MIN_PRICE_M2 || prixM2 > config.MAX_PRICE_M2) continue;
 
       if (surfaceM2 != null) {
         const tolerance = surfaceM2 * config.SURFACE_TOLERANCE;
@@ -81,7 +98,7 @@ export async function fetchDvfComparables(params: FetchDvfParams): Promise<Compa
         lat: row.latitude,
         lon: row.longitude,
         distance,
-        prix_m2: row.valeur_fonciere / surface,
+        prix_m2: prixM2,
       };
 
       const existing = seenMutations.get(row.id_mutation);
@@ -103,16 +120,7 @@ export async function fetchDvfComparables(params: FetchDvfParams): Promise<Compa
   }
 
   const comparables = Array.from(seenMutations.values());
-
   if (comparables.length === 0) return [];
 
-  const prixValues = comparables.map((c) => c.prix_m2);
-  const mean = prixValues.reduce((a, b) => a + b, 0) / prixValues.length;
-  const std = Math.sqrt(prixValues.reduce((s, v) => s + (v - mean) ** 2, 0) / prixValues.length);
-  const lowerBound = mean - config.OUTLIER_STD_DEVS * std;
-  const upperBound = mean + config.OUTLIER_STD_DEVS * std;
-
-  return comparables
-    .filter((c) => c.prix_m2 >= lowerBound && c.prix_m2 <= upperBound)
-    .sort((a, b) => a.distance - b.distance);
+  return filterByIQR(comparables).sort((a, b) => a.distance - b.distance);
 }

@@ -18,4 +18,10 @@ describe('config', () => {
     expect(config.DEFAULT_RADIUS_M).toBeGreaterThan(0);
     expect(config.DEFAULT_RADIUS_M).toBeLessThanOrEqual(5000);
   });
+
+  it('has IQR and price bounds', () => {
+    expect(config.IQR_MULTIPLIER).toBe(1.5);
+    expect(config.MIN_PRICE_M2).toBe(500);
+    expect(config.MAX_PRICE_M2).toBe(100_000);
+  });
 });

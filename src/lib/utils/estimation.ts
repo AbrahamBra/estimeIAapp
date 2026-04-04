@@ -1,11 +1,4 @@
-export function removeOutliers(values: number[], stdDevs: number): number[] {
-  if (values.length === 0) return [];
-  const mean = values.reduce((a, b) => a + b, 0) / values.length;
-  const variance = values.reduce((sum, v) => sum + (v - mean) ** 2, 0) / values.length;
-  const std = Math.sqrt(variance);
-  if (std === 0) return values;
-  return values.filter((v) => Math.abs(v - mean) <= stdDevs * std);
-}
+import type { PriceEstimation } from '$lib/types';
 
 export function assignWeights(dateMutation: string, distanceM: number): number {
   const year = new Date(dateMutation).getFullYear();
@@ -51,19 +44,43 @@ interface ComparableForEstimation {
   distance: number;
 }
 
+function computeConfidence(comparables: ComparableForEstimation[]): {
+  confidence: 'high' | 'medium' | 'low';
+  confidence_score: number;
+  confidence_factors: { count_score: number; cv_score: number; recency_score: number };
+} {
+  const n = comparables.length;
+  if (n === 0) return { confidence: 'low', confidence_score: 0, confidence_factors: { count_score: 0, cv_score: 0, recency_score: 0 } };
+
+  const count_score = Math.min(n / 15, 1) * 40;
+
+  const values = comparables.map((c) => c.prix_m2);
+  const mean = values.reduce((a, b) => a + b, 0) / n;
+  const std = Math.sqrt(values.reduce((s, v) => s + (v - mean) ** 2, 0) / n);
+  const cv = mean > 0 ? std / mean : 1;
+  const cv_score = cv < 0.15 ? 30 : cv < 0.25 ? 20 : cv < 0.35 ? 10 : 0;
+
+  const recentCount = comparables.filter((c) => new Date(c.date_mutation).getFullYear() >= 2024).length;
+  const recency_score = (recentCount / n) * 30;
+
+  const score = Math.round(count_score + cv_score + recency_score);
+  const confidence = score >= 70 ? 'high' : score >= 40 ? 'medium' : 'low';
+
+  return {
+    confidence,
+    confidence_score: score,
+    confidence_factors: {
+      count_score: Math.round(count_score),
+      cv_score: Math.round(cv_score),
+      recency_score: Math.round(recency_score),
+    },
+  };
+}
+
 export function computePriceRange(
   comparables: ComparableForEstimation[],
   surfaceM2: number | null
-): {
-  low_per_m2: number;
-  median_per_m2: number;
-  high_per_m2: number;
-  low_total: number | null;
-  median_total: number | null;
-  high_total: number | null;
-  comparable_count: number;
-  confidence: 'high' | 'medium' | 'low';
-} {
+): PriceEstimation {
   const values = comparables.map((c) => c.prix_m2);
   const weights = comparables.map((c) => assignWeights(c.date_mutation, c.distance));
 
@@ -71,8 +88,7 @@ export function computePriceRange(
   const median_per_m2 = weightedPercentile(values, weights, 0.5);
   const high_per_m2 = weightedPercentile(values, weights, 0.75);
 
-  const confidence =
-    comparables.length >= 10 ? 'high' : comparables.length >= 3 ? 'medium' : 'low';
+  const { confidence, confidence_score, confidence_factors } = computeConfidence(comparables);
 
   return {
     low_per_m2: Math.round(low_per_m2),
@@ -83,5 +99,7 @@ export function computePriceRange(
     high_total: surfaceM2 ? Math.round(high_per_m2 * surfaceM2) : null,
     comparable_count: comparables.length,
     confidence,
+    confidence_score,
+    confidence_factors,
   };
 }

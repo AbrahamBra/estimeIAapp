@@ -45,6 +45,18 @@ export interface PriceEstimation {
   high_total: number | null;
   comparable_count: number;
   confidence: 'high' | 'medium' | 'low';
+  confidence_score: number;
+  confidence_factors: {
+    count_score: number;
+    cv_score: number;
+    recency_score: number;
+  };
+}
+
+export interface YearlyTrend {
+  year: number;
+  median_prix_m2: number;
+  count: number;
 }
 
 export interface ProximityItem {

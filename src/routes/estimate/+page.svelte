@@ -2,7 +2,10 @@
   import { goto } from '$app/navigation';
   import { page } from '$app/stores';
   import { onMount } from 'svelte';
-  import PriceRange from '$lib/components/PriceRange.svelte';
+  import PriceGauge from '$lib/components/PriceGauge.svelte';
+  import ConfidenceMeter from '$lib/components/ConfidenceMeter.svelte';
+  import PriceDistribution from '$lib/components/PriceDistribution.svelte';
+  import PriceTrend from '$lib/components/PriceTrend.svelte';
   import ComparablesList from '$lib/components/ComparablesList.svelte';
   import ProximityBadges from '$lib/components/ProximityBadges.svelte';
   import Map from '$lib/components/Map.svelte';
@@ -32,7 +35,6 @@
         {data.propertyType}
         {#if data.surfaceM2} &middot; {data.surfaceM2} m&sup2;{/if}
       </p>
-      <!-- Radius toggle -->
       <div class="flex gap-2 mt-2">
         {#each radiusOptions as r}
           <button
@@ -62,10 +64,21 @@
     </div>
   {:else if data.estimation}
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-      <!-- Left: Map + Price -->
+      <!-- Left column: Hero + Map + Charts -->
       <div class="lg:col-span-2 space-y-6">
-        <PriceRange estimation={data.estimation} surfaceM2={data.surfaceM2} />
+        <!-- Price gauge hero -->
+        <PriceGauge estimation={data.estimation} surfaceM2={data.surfaceM2} />
 
+        <!-- Confidence meter -->
+        <div class="bg-white rounded-xl border border-navy/10 p-4">
+          <p class="text-xs font-medium text-navy/50 mb-2">Fiabilite de l'estimation</p>
+          <ConfidenceMeter
+            score={data.estimation.confidence_score}
+            factors={data.estimation.confidence_factors}
+          />
+        </div>
+
+        <!-- Map -->
         {#if mounted}
           <Map
             lat={data.lat}
@@ -77,10 +90,17 @@
           />
         {/if}
 
+        <!-- Charts row -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <PriceDistribution comparables={data.comparables} medianPrixM2={data.estimation.median_per_m2} />
+          <PriceTrend trend={data.trend} />
+        </div>
+
+        <!-- Proximity -->
         <ProximityBadges proximity={data.proximity} />
       </div>
 
-      <!-- Right: Comparables list -->
+      <!-- Right column: Comparables list -->
       <div>
         <h2 class="font-display text-lg font-bold text-navy mb-4">
           {data.comparables.length} vente{data.comparables.length > 1 ? 's' : ''} comparable{data.comparables.length > 1 ? 's' : ''}

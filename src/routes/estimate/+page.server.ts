@@ -3,8 +3,28 @@ import { fetchDvfComparables } from '$lib/api/dvf';
 import { computePriceRange } from '$lib/utils/estimation';
 import { lookupProximity } from '$lib/api/proximity';
 import { config } from '$lib/config';
-import type { Comparable } from '$lib/types';
+import type { Comparable, YearlyTrend } from '$lib/types';
 import type { PageServerLoad } from './$types';
+
+function computeTrend(comparables: Comparable[]): YearlyTrend[] {
+  const byYear = new Map<number, number[]>();
+  for (const c of comparables) {
+    const year = new Date(c.date_mutation).getFullYear();
+    if (!byYear.has(year)) byYear.set(year, []);
+    byYear.get(year)!.push(c.prix_m2);
+  }
+
+  return [...byYear.entries()]
+    .map(([year, prices]) => {
+      prices.sort((a, b) => a - b);
+      const mid = Math.floor(prices.length / 2);
+      const median = prices.length % 2 === 0
+        ? (prices[mid - 1] + prices[mid]) / 2
+        : prices[mid];
+      return { year, median_prix_m2: Math.round(median), count: prices.length };
+    })
+    .sort((a, b) => a.year - b.year);
+}
 
 export const load: PageServerLoad = async ({ url }) => {
   const lat = parseFloat(url.searchParams.get('lat') ?? '');
@@ -51,6 +71,7 @@ export const load: PageServerLoad = async ({ url }) => {
       )
     : null;
 
+  const trend = computeTrend(comparables);
   const proximity = lookupProximity(dept, lat, lon, 1000);
 
   return {
@@ -62,6 +83,7 @@ export const load: PageServerLoad = async ({ url }) => {
     lon,
     comparables,
     estimation,
+    trend,
     isAlsaceMoselle,
     radiusM,
     dvfError,

@@ -20,6 +20,21 @@
     }
   });
 
+  // Compute price terciles for color coding
+  let terciles = $derived.by(() => {
+    const prices = comparables.map(c => c.prix_m2).sort((a, b) => a - b);
+    return {
+      t1: prices[Math.floor(prices.length / 3)] ?? 0,
+      t2: prices[Math.floor(prices.length * 2 / 3)] ?? Infinity,
+    };
+  });
+
+  function priceColor(prix_m2: number): string {
+    if (prix_m2 <= terciles.t1) return '#4a9d6b';
+    if (prix_m2 <= terciles.t2) return '#d4a029';
+    return '#d45a5a';
+  }
+
   $effect(() => {
     if (selectedId) {
       const el = document.querySelector(`[data-mutation-id="${selectedId}"]`);
@@ -37,7 +52,7 @@
     ] as { key, label } (key)}
       <button
         type="button"
-        class="text-xs px-3 py-1.5 rounded-full transition {sortBy === key ? 'bg-navy text-white' : 'bg-navy/5 text-navy/60 hover:bg-navy/10'}"
+        class="text-xs px-3 py-1.5 rounded-full transition-all duration-200 {sortBy === key ? 'bg-navy text-white shadow-sm' : 'bg-navy/5 text-navy/50 hover:bg-navy/10'}"
         onclick={() => sortBy = key as SortKey}
       >
         {label}
@@ -45,12 +60,16 @@
     {/each}
   </div>
 
-  <div class="space-y-2 max-h-[600px] overflow-y-auto">
-    {#each sorted as comparable (comparable.id_mutation)}
-      <div data-mutation-id={comparable.id_mutation}>
+  <div class="space-y-2 max-h-[600px] overflow-y-auto pr-1">
+    {#each sorted as comparable, i (comparable.id_mutation)}
+      <div
+        data-mutation-id={comparable.id_mutation}
+        style="animation: fadeInUp 0.4s ease-out {i * 50}ms both;"
+      >
         <ComparableCard
           {comparable}
           isSelected={comparable.id_mutation === selectedId}
+          priceColor={priceColor(comparable.prix_m2)}
           onClick={() => onSelect(comparable)}
         />
       </div>
