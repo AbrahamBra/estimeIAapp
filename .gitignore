@@ -21,3 +21,8 @@ Thumbs.db
 # Vite
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
+
+# Data files (generated)
+static/data/bpe/
+static/data/transport/
+scripts/bpe24_ensemble_xy.csv
