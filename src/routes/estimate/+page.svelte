@@ -11,6 +11,7 @@
   import DpeBadge from '$lib/components/DpeBadge.svelte';
   import RiskBadges from '$lib/components/RiskBadges.svelte';
   import PropertyScore from '$lib/components/PropertyScore.svelte';
+  import CommuneContext from '$lib/components/CommuneContext.svelte';
   import Map from '$lib/components/Map.svelte';
   import { computePriceRange } from '$lib/utils/estimation';
   import type { Comparable } from '$lib/types';
@@ -109,17 +110,20 @@
     </div>
   {:else if filteredEstimation}
     <!-- Covid toggle -->
-    {#if covidCount > 0}
-      <div class="flex items-center gap-3 mb-4 print:hidden">
-        <label class="inline-flex items-center gap-2 text-xs cursor-pointer">
-          <input type="checkbox" bind:checked={excludeCovid} class="rounded border-navy/20 text-sage focus:ring-sage" />
-          <span class="text-navy/50">
-            Exclure les {covidCount} vente{covidCount > 1 ? 's' : ''} en periode Covid
-            <span class="text-navy/30">(mars 2020 – juin 2021)</span>
-          </span>
-        </label>
-      </div>
-    {/if}
+    <div class="flex items-center gap-3 mb-4 print:hidden">
+      <label class="inline-flex items-center gap-2 text-xs cursor-pointer {covidCount === 0 ? 'opacity-40' : ''}">
+        <input type="checkbox" bind:checked={excludeCovid} disabled={covidCount === 0} class="rounded border-navy/20 text-sage focus:ring-sage" />
+        <span class="text-navy/50">
+          Exclure les ventes en periode Covid
+          <span class="text-navy/30">(mars 2020 – juin 2021)</span>
+          {#if covidCount > 0}
+            <span class="text-amber font-medium">— {covidCount} vente{covidCount > 1 ? 's' : ''}</span>
+          {:else}
+            <span class="text-navy/20">— aucune dans ce jeu</span>
+          {/if}
+        </span>
+      </label>
+    </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 print:block">
       <!-- Left column: Hero + Map + Charts -->
@@ -176,6 +180,11 @@
 
         <!-- Proximity -->
         <ProximityBadges proximity={data.proximity} />
+
+        <!-- Commune context -->
+        {#if data.communeCtx}
+          <CommuneContext commune={data.communeCtx} />
+        {/if}
       </div>
 
       <!-- Right column: Comparables list -->

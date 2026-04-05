@@ -4,6 +4,7 @@ import { computePriceRange } from '$lib/utils/estimation';
 import { lookupProximity } from '$lib/api/proximity';
 import { fetchDpeNearby } from '$lib/api/dpe';
 import { fetchRisks } from '$lib/api/georisques';
+import { fetchCommuneContext } from '$lib/api/commune';
 import { config } from '$lib/config';
 import type { Comparable, YearlyTrend } from '$lib/types';
 import type { PageServerLoad } from './$types';
@@ -78,11 +79,12 @@ export const load: PageServerLoad = async ({ url }) => {
 
   const trend = computeTrend(comparables);
 
-  // Fetch proximity, DPE, and risks in parallel
-  const [proximity, dpe, risks] = await Promise.all([
+  // Fetch proximity, DPE, risks, and commune context in parallel
+  const [proximity, dpe, risks, communeCtx] = await Promise.all([
     Promise.resolve(lookupProximity(dept, lat, lon, 1000)),
     fetchDpeNearby(address, postcode),
     fetchRisks(postcode),
+    fetchCommuneContext(postcode),
   ]);
 
   return {
@@ -101,5 +103,6 @@ export const load: PageServerLoad = async ({ url }) => {
     proximity,
     dpe,
     risks,
+    communeCtx,
   };
 };

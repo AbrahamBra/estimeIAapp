@@ -94,3 +94,13 @@ export interface RiskResult {
   catnat_count: number;
   catnat_types: Record<string, number>;
 }
+
+export interface CommuneContext {
+  population: number | null;
+  density: number | null;       // hab/km²
+  taxe_fonciere: number | null; // taux global TFB %
+  teom: number | null;          // taux TEOM %
+  water_quality: 'conforme' | 'non_conforme' | null;
+  water_analyses: number | null;
+  water_conform_pct: number | null;
+}
