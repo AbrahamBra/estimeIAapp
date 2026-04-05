@@ -12,4 +12,6 @@ export const config = {
   MAX_PRICE_M2: 100_000,
   SURFACE_TOLERANCE: 0.3,
   ALSACE_MOSELLE_DEPTS: ['57', '67', '68'],
+  COVID_START: '2020-03-01',
+  COVID_END: '2021-06-30',
 } as const;

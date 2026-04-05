@@ -85,6 +85,8 @@ export async function fetchDvfComparables(params: FetchDvfParams): Promise<Compa
       const distance = haversineDistance(lat, lon, row.latitude, row.longitude);
       if (distance > radiusM) continue;
 
+      const isCovid = row.date_mutation >= config.COVID_START && row.date_mutation <= config.COVID_END;
+
       const comparable: Comparable = {
         id_mutation: row.id_mutation,
         date_mutation: row.date_mutation,
@@ -99,6 +101,7 @@ export async function fetchDvfComparables(params: FetchDvfParams): Promise<Compa
         lon: row.longitude,
         distance,
         prix_m2: prixM2,
+        covid_period: isCovid,
       };
 
       const existing = seenMutations.get(row.id_mutation);

@@ -34,6 +34,7 @@ export interface Comparable {
   lon: number;
   distance: number;
   prix_m2: number;
+  covid_period: boolean;
 }
 
 export interface PriceEstimation {

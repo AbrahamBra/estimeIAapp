@@ -35,3 +35,15 @@
   0%, 100% { opacity: 1; }
   50% { opacity: 0.7; }
 }
+
+@media print {
+  body { background: white !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  nav, .print\:hidden { display: none !important; }
+  .hidden.print\:block { display: block !important; }
+  .print\:grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+  .print\:block { display: block !important; }
+  .print\:mt-8 { margin-top: 2rem !important; }
+  .shadow-sm, .shadow-md, .shadow-lg { box-shadow: none !important; }
+  .rounded-2xl, .rounded-xl { border: 1px solid oklch(0.85 0.01 230) !important; }
+  * { animation: none !important; transition: none !important; }
+}
