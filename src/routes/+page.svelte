@@ -6,6 +6,8 @@
   let selectedAddress: BanResult | null = $state(null);
   let propertyType: 'Appartement' | 'Maison' = $state('Appartement');
   let surface: string = $state('');
+  let rooms: string = $state('');
+  let showAdvanced = $state(false);
 
   function handleSubmit(e: Event) {
     e.preventDefault();
@@ -18,6 +20,7 @@
       type: propertyType,
     });
     if (surface) params.set('surface', surface);
+    if (rooms) params.set('rooms', rooms);
     goto(`/estimate?${params.toString()}`);
   }
 </script>
@@ -81,6 +84,49 @@
           />
         </div>
       </div>
+
+      <!-- Advanced filters toggle -->
+      <button
+        type="button"
+        class="inline-flex items-center gap-1.5 text-xs text-navy/40 hover:text-navy/60 transition"
+        onclick={() => showAdvanced = !showAdvanced}
+      >
+        <svg class="w-3 h-3 transition-transform {showAdvanced ? 'rotate-180' : ''}" viewBox="0 0 12 12">
+          <path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+        </svg>
+        Filtres avances
+      </button>
+
+      {#if showAdvanced}
+        <div class="grid grid-cols-2 gap-4" style="animation: fadeInUp 0.3s ease-out;">
+          <div>
+            <label for="rooms" class="block text-sm font-medium text-navy mb-2">Nombre de pieces</label>
+            <select
+              id="rooms"
+              bind:value={rooms}
+              class="w-full border border-navy/20 rounded-lg px-4 py-3 bg-white focus:ring-2 focus:ring-sage focus:border-sage transition"
+            >
+              <option value="">Toutes</option>
+              <option value="1">1 piece</option>
+              <option value="2">2 pieces</option>
+              <option value="3">3 pieces</option>
+              <option value="4">4 pieces</option>
+              <option value="5">5+ pieces</option>
+            </select>
+          </div>
+          <div>
+            <label for="radius" class="block text-sm font-medium text-navy mb-2">Rayon de recherche</label>
+            <select
+              id="radius"
+              class="w-full border border-navy/20 rounded-lg px-4 py-3 bg-white focus:ring-2 focus:ring-sage focus:border-sage transition"
+            >
+              <option value="500">500 m</option>
+              <option value="1000" selected>1 km</option>
+              <option value="2000">2 km</option>
+            </select>
+          </div>
+        </div>
+      {/if}
 
       <button
         type="submit"

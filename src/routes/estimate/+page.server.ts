@@ -38,6 +38,8 @@ export const load: PageServerLoad = async ({ url }) => {
   const surfaceM2 = surfaceParam ? parseFloat(surfaceParam) : null;
   const radiusParam = url.searchParams.get('radius');
   const radiusM = radiusParam ? parseInt(radiusParam) : config.DEFAULT_RADIUS_M;
+  const roomsParam = url.searchParams.get('rooms');
+  const rooms = roomsParam ? parseInt(roomsParam) : null;
 
   if (isNaN(lat) || isNaN(lon) || !postcode) {
     error(400, 'Parametres manquants: lat, lon, postcode');
@@ -57,6 +59,7 @@ export const load: PageServerLoad = async ({ url }) => {
       lon,
       radiusM,
       surfaceM2,
+      rooms,
     });
   } catch {
     dvfError = true;

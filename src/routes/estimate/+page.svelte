@@ -10,6 +10,7 @@
   import ProximityBadges from '$lib/components/ProximityBadges.svelte';
   import DpeBadge from '$lib/components/DpeBadge.svelte';
   import RiskBadges from '$lib/components/RiskBadges.svelte';
+  import PropertyScore from '$lib/components/PropertyScore.svelte';
   import Map from '$lib/components/Map.svelte';
   import { computePriceRange } from '$lib/utils/estimation';
   import type { Comparable } from '$lib/types';
@@ -126,13 +127,21 @@
         <!-- Price gauge hero -->
         <PriceGauge estimation={filteredEstimation} surfaceM2={data.surfaceM2} />
 
-        <!-- Confidence meter -->
-        <div class="bg-white rounded-xl border border-navy/10 p-4">
-          <p class="text-xs font-medium text-navy/50 mb-2">Fiabilite de l'estimation</p>
-          <ConfidenceMeter
-            score={filteredEstimation.confidence_score}
-            factors={filteredEstimation.confidence_factors}
+        <!-- Score + Confidence row -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <PropertyScore
+            estimation={filteredEstimation}
+            comparables={filteredComparables}
+            surfaceM2={data.surfaceM2}
+            dpe={data.dpe}
           />
+          <div class="bg-white rounded-xl border border-navy/10 p-5">
+            <p class="text-xs font-medium text-navy/50 mb-3">Fiabilite de l'estimation</p>
+            <ConfidenceMeter
+              score={filteredEstimation.confidence_score}
+              factors={filteredEstimation.confidence_factors}
+            />
+          </div>
         </div>
 
         <!-- Map -->

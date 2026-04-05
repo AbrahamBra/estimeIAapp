@@ -9,6 +9,7 @@ interface FetchDvfParams {
   lon: number;
   radiusM: number;
   surfaceM2: number | null;
+  rooms: number | null;
 }
 
 function getSurface(row: any): number | null {
@@ -59,7 +60,7 @@ function filterByIQR(comparables: Comparable[]): Comparable[] {
 }
 
 export async function fetchDvfComparables(params: FetchDvfParams): Promise<Comparable[]> {
-  const { postcode, propertyType, lat, lon, radiusM, surfaceM2 } = params;
+  const { postcode, propertyType, lat, lon, radiusM, surfaceM2, rooms } = params;
   const seenMutations = new Map<string, Comparable>();
 
   for (let page = 1; page <= config.MAX_DVF_PAGES; page++) {
@@ -80,6 +81,15 @@ export async function fetchDvfComparables(params: FetchDvfParams): Promise<Compa
       if (surfaceM2 != null) {
         const tolerance = surfaceM2 * config.SURFACE_TOLERANCE;
         if (surface < surfaceM2 - tolerance || surface > surfaceM2 + tolerance) continue;
+      }
+
+      // Rooms filter: exact match, or 5+ means >= 5
+      if (rooms != null && row.nombre_pieces_principales != null) {
+        if (rooms >= 5) {
+          if (row.nombre_pieces_principales < 5) continue;
+        } else {
+          if (row.nombre_pieces_principales !== rooms) continue;
+        }
       }
 
       const distance = haversineDistance(lat, lon, row.latitude, row.longitude);

@@ -55,6 +55,7 @@ describe('fetchDvfComparables', () => {
       lon: 2.305,
       radiusM: 1000,
       surfaceM2: null,
+      rooms: null,
     });
 
     expect(result).toHaveLength(1);
@@ -75,6 +76,7 @@ describe('fetchDvfComparables', () => {
       lon: 2.305,
       radiusM: 1000,
       surfaceM2: null,
+      rooms: null,
     });
 
     expect(result).toHaveLength(1);
@@ -94,6 +96,7 @@ describe('fetchDvfComparables', () => {
       lon: 2.305,
       radiusM: 1000,
       surfaceM2: null,
+      rooms: null,
     });
 
     expect(result).toHaveLength(0);
@@ -126,6 +129,7 @@ describe('fetchDvfComparables', () => {
       lon: 2.305,
       radiusM: 1000,
       surfaceM2: null,
+      rooms: null,
     });
 
     expect(mockFetch).toHaveBeenCalledTimes(3);
@@ -146,6 +150,7 @@ describe('fetchDvfComparables', () => {
       lon: 2.305,
       radiusM: 1000,
       surfaceM2: 50,
+      rooms: null,
     });
 
     expect(result).toHaveLength(1);
