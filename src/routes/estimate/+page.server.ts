@@ -2,6 +2,8 @@ import { error } from '@sveltejs/kit';
 import { fetchDvfComparables } from '$lib/api/dvf';
 import { computePriceRange } from '$lib/utils/estimation';
 import { lookupProximity } from '$lib/api/proximity';
+import { fetchDpeNearby } from '$lib/api/dpe';
+import { fetchRisks } from '$lib/api/georisques';
 import { config } from '$lib/config';
 import type { Comparable, YearlyTrend } from '$lib/types';
 import type { PageServerLoad } from './$types';
@@ -72,7 +74,13 @@ export const load: PageServerLoad = async ({ url }) => {
     : null;
 
   const trend = computeTrend(comparables);
-  const proximity = lookupProximity(dept, lat, lon, 1000);
+
+  // Fetch proximity, DPE, and risks in parallel
+  const [proximity, dpe, risks] = await Promise.all([
+    Promise.resolve(lookupProximity(dept, lat, lon, 1000)),
+    fetchDpeNearby(address, postcode),
+    fetchRisks(postcode),
+  ]);
 
   return {
     address,
@@ -88,5 +96,7 @@ export const load: PageServerLoad = async ({ url }) => {
     radiusM,
     dvfError,
     proximity,
+    dpe,
+    risks,
   };
 };

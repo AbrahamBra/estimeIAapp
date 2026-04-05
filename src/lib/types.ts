@@ -75,3 +75,21 @@ export interface ProximitySummary {
   sports: { count: number; closest_m: number };
   services: { count: number; closest_m: number };
 }
+
+export type DpeClass = 'A' | 'B' | 'C' | 'D' | 'E' | 'F' | 'G';
+
+export interface DpeResult {
+  count: number;
+  dominant_dpe: DpeClass;
+  dominant_ges: DpeClass;
+  avg_conso_m2: number | null;
+  avg_ges_m2: number | null;
+  distribution: Record<string, number>;
+}
+
+export interface RiskResult {
+  commune: string;
+  risks: string[];
+  catnat_count: number;
+  catnat_types: Record<string, number>;
+}

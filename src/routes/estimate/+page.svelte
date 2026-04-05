@@ -8,6 +8,8 @@
   import PriceTrend from '$lib/components/PriceTrend.svelte';
   import ComparablesList from '$lib/components/ComparablesList.svelte';
   import ProximityBadges from '$lib/components/ProximityBadges.svelte';
+  import DpeBadge from '$lib/components/DpeBadge.svelte';
+  import RiskBadges from '$lib/components/RiskBadges.svelte';
   import Map from '$lib/components/Map.svelte';
   import type { Comparable } from '$lib/types';
 
@@ -94,6 +96,16 @@
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <PriceDistribution comparables={data.comparables} medianPrixM2={data.estimation.median_per_m2} />
           <PriceTrend trend={data.trend} />
+        </div>
+
+        <!-- DPE + Risks -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {#if data.dpe}
+            <DpeBadge dpe={data.dpe} />
+          {/if}
+          {#if data.risks}
+            <RiskBadges risks={data.risks} />
+          {/if}
         </div>
 
         <!-- Proximity -->
