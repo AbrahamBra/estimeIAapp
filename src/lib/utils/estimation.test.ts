@@ -3,6 +3,7 @@ import {
   assignWeights,
   weightedPercentile,
   computePriceRange,
+  applyCoefficient,
 } from './estimation';
 
 describe('assignWeights', () => {
@@ -102,5 +103,50 @@ describe('computePriceRange', () => {
     const tightResult = computePriceRange(tight, 60);
     const spreadResult = computePriceRange(spread, 60);
     expect(tightResult.confidence_score).toBeGreaterThan(spreadResult.confidence_score);
+  });
+});
+
+describe('applyCoefficient', () => {
+  const baseEstimation = {
+    low_per_m2: 8000,
+    median_per_m2: 10000,
+    high_per_m2: 12000,
+    low_total: 480000,
+    median_total: 600000,
+    high_total: 720000,
+    comparable_count: 10,
+    confidence: 'high' as const,
+    confidence_score: 80,
+    confidence_factors: { count_score: 40, cv_score: 30, recency_score: 10 },
+  };
+
+  it('multiplies all price fields by coefficient', () => {
+    const result = applyCoefficient(baseEstimation, 1.15);
+    expect(result.median_per_m2).toBe(Math.round(10000 * 1.15));
+    expect(result.low_per_m2).toBe(Math.round(8000 * 1.15));
+    expect(result.high_per_m2).toBe(Math.round(12000 * 1.15));
+    expect(result.median_total).toBe(Math.round(600000 * 1.15));
+    expect(result.low_total).toBe(Math.round(480000 * 1.15));
+    expect(result.high_total).toBe(Math.round(720000 * 1.15));
+  });
+
+  it('does not modify confidence fields', () => {
+    const result = applyCoefficient(baseEstimation, 0.85);
+    expect(result.confidence).toBe('high');
+    expect(result.confidence_score).toBe(80);
+    expect(result.confidence_factors).toEqual(baseEstimation.confidence_factors);
+    expect(result.comparable_count).toBe(10);
+  });
+
+  it('handles null totals', () => {
+    const noSurface = { ...baseEstimation, low_total: null, median_total: null, high_total: null };
+    const result = applyCoefficient(noSurface, 1.10);
+    expect(result.median_per_m2).toBe(Math.round(10000 * 1.10));
+    expect(result.median_total).toBeNull();
+  });
+
+  it('returns unchanged estimation for coefficient 1.0', () => {
+    const result = applyCoefficient(baseEstimation, 1.0);
+    expect(result).toEqual(baseEstimation);
   });
 });

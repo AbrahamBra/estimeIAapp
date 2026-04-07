@@ -103,3 +103,19 @@ export function computePriceRange(
     confidence_factors,
   };
 }
+
+export function applyCoefficient(
+  estimation: PriceEstimation,
+  coefficient: number
+): PriceEstimation {
+  if (coefficient === 1.0) return estimation;
+  return {
+    ...estimation,
+    low_per_m2: Math.round(estimation.low_per_m2 * coefficient),
+    median_per_m2: Math.round(estimation.median_per_m2 * coefficient),
+    high_per_m2: Math.round(estimation.high_per_m2 * coefficient),
+    low_total: estimation.low_total !== null ? Math.round(estimation.low_total * coefficient) : null,
+    median_total: estimation.median_total !== null ? Math.round(estimation.median_total * coefficient) : null,
+    high_total: estimation.high_total !== null ? Math.round(estimation.high_total * coefficient) : null,
+  };
+}
