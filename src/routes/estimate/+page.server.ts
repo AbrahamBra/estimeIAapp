@@ -6,6 +6,8 @@ import { fetchDpeNearby } from '$lib/api/dpe';
 import { fetchRisks } from '$lib/api/georisques';
 import { fetchCommuneContext } from '$lib/api/commune';
 import { config } from '$lib/config';
+import { parseCharacteristics, computeCharacteristicsCoefficient } from '$lib/config/coefficients';
+import { applyCoefficient } from '$lib/utils/estimation';
 import type { Comparable, YearlyTrend } from '$lib/types';
 import type { PageServerLoad } from './$types';
 
@@ -42,6 +44,12 @@ export const load: PageServerLoad = async ({ url }) => {
   const roomsParam = url.searchParams.get('rooms');
   const rooms = roomsParam ? parseInt(roomsParam) : null;
 
+  const characteristics = parseCharacteristics(url.searchParams);
+  const hasCharacteristics = Object.values(characteristics).some(v => v !== null);
+  const characteristicsResult = hasCharacteristics
+    ? computeCharacteristicsCoefficient(characteristics, propertyType)
+    : null;
+
   if (isNaN(lat) || isNaN(lon) || !postcode) {
     error(400, 'Parametres manquants: lat, lon, postcode');
   }
@@ -66,7 +74,7 @@ export const load: PageServerLoad = async ({ url }) => {
     dvfError = true;
   }
 
-  const estimation = comparables.length > 0
+  const baseEstimation = comparables.length > 0
     ? computePriceRange(
         comparables.map((c) => ({
           prix_m2: c.prix_m2,
@@ -76,6 +84,10 @@ export const load: PageServerLoad = async ({ url }) => {
         surfaceM2
       )
     : null;
+
+  const estimation = baseEstimation && characteristicsResult
+    ? applyCoefficient(baseEstimation, characteristicsResult.coefficient)
+    : baseEstimation;
 
   const trend = computeTrend(comparables);
 
@@ -96,6 +108,9 @@ export const load: PageServerLoad = async ({ url }) => {
     lon,
     comparables,
     estimation,
+    characteristics: hasCharacteristics ? characteristics : null,
+    characteristicsResult,
+    baseEstimation,
     trend,
     isAlsaceMoselle,
     radiusM,
