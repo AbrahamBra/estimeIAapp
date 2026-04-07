@@ -15,12 +15,26 @@
   import CharacteristicsImpact from '$lib/components/CharacteristicsImpact.svelte';
   import Map from '$lib/components/Map.svelte';
   import { computePriceRange, applyCoefficient } from '$lib/utils/estimation';
-  import type { Comparable } from '$lib/types';
+  import type { Comparable, ProFeature } from '$lib/types';
+  import LockedFeature from '$lib/components/LockedFeature.svelte';
+  import WaitlistModal from '$lib/components/WaitlistModal.svelte';
+  import MockPermits from '$lib/components/MockPermits.svelte';
+  import MockCadastre from '$lib/components/MockCadastre.svelte';
+  import MockUrbanisme from '$lib/components/MockUrbanisme.svelte';
+  import MockProprietaires from '$lib/components/MockProprietaires.svelte';
+  import MockCopropriete from '$lib/components/MockCopropriete.svelte';
 
   let { data } = $props();
   let selectedComparable: Comparable | null = $state(null);
   let mounted = $state(false);
   let excludeCovid = $state(false);
+  let showWaitlist = $state(false);
+  let waitlistFeature: ProFeature = $state('permits');
+
+  function openWaitlist(feature: ProFeature) {
+    waitlistFeature = feature;
+    showWaitlist = true;
+  }
 
   onMount(() => { mounted = true; });
 
@@ -283,6 +297,47 @@
         <CommuneContext commune={data.communeCtx} />
       {/if}
     </section>
+
+    <!-- ===== SECTION: Données Pro ===== -->
+    <section class="mb-12 print:hidden">
+      <div class="flex items-center gap-2 mb-6">
+        <div class="w-1.5 h-6 rounded-full" style="background: linear-gradient(180deg, oklch(0.75 0.12 85), oklch(0.65 0.14 65));"></div>
+        <h2 class="font-display text-lg font-bold text-navy">Données Pro</h2>
+        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold tracking-wider uppercase text-white"
+          style="background: linear-gradient(135deg, oklch(0.75 0.12 85), oklch(0.65 0.14 65));"
+        >PRO</span>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <LockedFeature title="Permis de construire" teaser="4 permis délivrés dans un rayon de 500m ces 2 dernières années" feature="permits" onunlock={openWaitlist}>
+          <MockPermits />
+        </LockedFeature>
+
+        <LockedFeature title="Données cadastrales" teaser="Surface terrain : 485 m² — Ratio terrain/bâti : 3.4" feature="cadastre" onunlock={openWaitlist}>
+          <MockCadastre />
+        </LockedFeature>
+
+        <LockedFeature title="Urbanisme & PLU" teaser="Zone UA — Constructibilité et règles d'urbanisme" feature="urbanisme" onunlock={openWaitlist}>
+          <MockUrbanisme />
+        </LockedFeature>
+
+        <LockedFeature title="Propriétaire" teaser="Propriétaire identifié — SCI ••••••" feature="proprietaires" onunlock={openWaitlist}>
+          <MockProprietaires />
+        </LockedFeature>
+
+        <LockedFeature title="Copropriété" teaser="Copropriété de 24 lots — Charges moyennes : 32€/m²/an" feature="copropriete" onunlock={openWaitlist}>
+          <MockCopropriete />
+        </LockedFeature>
+      </div>
+    </section>
+
+    <!-- Waitlist modal (shared) -->
+    <WaitlistModal
+      feature={waitlistFeature}
+      address={data.address}
+      bind:open={showWaitlist}
+      onclose={() => showWaitlist = false}
+    />
 
     <!-- Print footer -->
     <div class="hidden print:block mt-8 pt-4 border-t border-navy/10">

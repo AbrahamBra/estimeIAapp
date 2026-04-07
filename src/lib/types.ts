@@ -127,3 +127,43 @@ export interface CharacteristicsResult {
   coefficient: number;
   breakdown: CharacteristicsBreakdownItem[];
 }
+
+// === Pro Features (locked/mock) ===
+
+export type ProFeature = 'permits' | 'cadastre' | 'urbanisme' | 'proprietaires' | 'copropriete';
+
+export interface MockPermit {
+  date: string;
+  type: 'construction' | 'extension' | 'demolition' | 'amenagement';
+  address: string;
+  surface_m2: number;
+}
+
+export interface MockCadastreData {
+  reference: string;
+  surface_terrain: number;
+  surface_batie: number;
+  ratio: number;
+}
+
+export interface MockUrbanismeData {
+  zone: string;
+  zone_label: string;
+  cos: number;
+  emprise: number;
+  hauteur_max: string;
+  recul: string;
+}
+
+export interface MockProprietaireData {
+  type: 'SCI' | 'personne_physique' | 'bailleur_social';
+  nom: string;
+  date_acquisition: string;
+}
+
+export interface MockCoproprieteData {
+  lots: number;
+  batiments: number;
+  syndic: string;
+  charges_moy_m2: number;
+}
