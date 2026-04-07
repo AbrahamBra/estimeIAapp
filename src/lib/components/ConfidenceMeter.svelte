@@ -50,14 +50,14 @@
       <span class="text-xs text-navy/30 w-8 text-right">{factors.count_score}/40</span>
     </div>
     <div class="flex items-center gap-2">
-      <span class="text-xs text-navy/40 w-20">Coherence</span>
+      <span class="text-xs text-navy/40 w-20">Cohérence</span>
       <div class="flex-1 h-1.5 rounded-full bg-navy-light overflow-hidden">
         <div class="h-full rounded-full bg-sage transition-all duration-700" style="width: {(factors.cv_score / 30) * 100}%"></div>
       </div>
       <span class="text-xs text-navy/30 w-8 text-right">{factors.cv_score}/30</span>
     </div>
     <div class="flex items-center gap-2">
-      <span class="text-xs text-navy/40 w-20">Recence</span>
+      <span class="text-xs text-navy/40 w-20">Récence</span>
       <div class="flex-1 h-1.5 rounded-full bg-navy-light overflow-hidden">
         <div class="h-full rounded-full bg-sage transition-all duration-700" style="width: {(factors.recency_score / 30) * 100}%"></div>
       </div>

@@ -30,7 +30,7 @@
     </div>
     <div class="ml-3 flex items-center gap-1.5">
       {#if comparable.covid_period}
-        <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-medium bg-amber/15 text-amber" title="Vente en periode Covid (mars 2020 - juin 2021)">Covid</span>
+        <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-medium bg-amber/15 text-amber" title="Vente en période Covid (mars 2020 - juin 2021)">Covid</span>
       {/if}
       <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-navy/5 text-navy/50">
         {formatDate(comparable.date_mutation)}

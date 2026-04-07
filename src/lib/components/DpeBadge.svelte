@@ -65,7 +65,7 @@
 
   {#if expanded}
     <div class="mt-4 space-y-2" style="animation: fadeInUp 0.3s ease-out;">
-      <p class="text-xs text-navy/40 mb-2">Distribution DPE ({dpe.count} diagnostics a proximite)</p>
+      <p class="text-xs text-navy/40 mb-2">Distribution DPE ({dpe.count} diagnostics à proximité)</p>
       <!-- DPE distribution bar -->
       <div class="flex gap-0.5 h-5 rounded overflow-hidden">
         {#each classes as cls}

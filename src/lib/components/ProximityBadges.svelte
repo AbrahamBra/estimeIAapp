@@ -4,10 +4,10 @@
   let { proximity }: { proximity: ProximitySummary } = $props();
 
   const badges = [
-    { key: 'schools' as const, label: 'Ecoles' },
+    { key: 'schools' as const, label: 'Écoles' },
     { key: 'transit' as const, label: 'Transports' },
     { key: 'shops' as const, label: 'Commerces' },
-    { key: 'health' as const, label: 'Sante' },
+    { key: 'health' as const, label: 'Santé' },
     { key: 'sports' as const, label: 'Loisirs' },
   ];
 </script>

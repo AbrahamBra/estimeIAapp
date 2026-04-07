@@ -31,14 +31,14 @@
     Estimez un bien en <span class="text-sage">15 secondes</span>
   </h1>
   <p class="text-navy/50 text-lg mb-8 max-w-lg mx-auto">
-    Ventes comparables, fourchette de prix et analyse de marche, alimentes par les donnees officielles DVF.
+    Ventes comparables, fourchette de prix et analyse de marché, alimentées par les données officielles DVF.
   </p>
 
   <!-- Trust badges -->
   <div class="flex flex-wrap justify-center gap-3 mb-10">
     <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-sage/10 text-sage text-xs font-medium">
       <svg class="w-3.5 h-3.5" viewBox="0 0 16 16" fill="none"><path d="M8 1L10.2 5.5L15 6.2L11.5 9.6L12.4 14.4L8 12.1L3.6 14.4L4.5 9.6L1 6.2L5.8 5.5L8 1Z" fill="currentColor"/></svg>
-      Donnees DVF officielles
+      Données DVF officielles
     </span>
     <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-navy/5 text-navy/60 text-xs font-medium">
       <svg class="w-3.5 h-3.5" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.5"/><path d="M5.5 8.5L7 10L10.5 6.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -99,24 +99,24 @@
         <svg class="w-3 h-3 transition-transform {showAdvanced ? 'rotate-180' : ''}" viewBox="0 0 12 12">
           <path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round"/>
         </svg>
-        Filtres avances
+        Filtres avancés
       </button>
 
       {#if showAdvanced}
         <div class="grid grid-cols-2 gap-4" style="animation: fadeInUp 0.3s ease-out;">
           <div>
-            <label for="rooms" class="block text-sm font-medium text-navy mb-2">Nombre de pieces</label>
+            <label for="rooms" class="block text-sm font-medium text-navy mb-2">Nombre de pièces</label>
             <select
               id="rooms"
               bind:value={rooms}
               class="w-full border border-navy/20 rounded-lg px-4 py-3 bg-white focus:ring-2 focus:ring-sage focus:border-sage transition"
             >
               <option value="">Toutes</option>
-              <option value="1">1 piece</option>
-              <option value="2">2 pieces</option>
-              <option value="3">3 pieces</option>
-              <option value="4">4 pieces</option>
-              <option value="5">5+ pieces</option>
+              <option value="1">1 pièce</option>
+              <option value="2">2 pièces</option>
+              <option value="3">3 pièces</option>
+              <option value="4">4 pièces</option>
+              <option value="5">5+ pièces</option>
             </select>
           </div>
           <div>
@@ -145,7 +145,7 @@
 
   <!-- How it works -->
   <div class="mt-20">
-    <h2 class="font-display text-xl font-bold text-navy mb-8">Comment ca marche</h2>
+    <h2 class="font-display text-xl font-bold text-navy mb-8">Comment ça marche</h2>
     <div class="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
       <div style="animation: fadeInUp 0.5s ease-out 100ms both;">
         <div class="w-12 h-12 mx-auto mb-3 rounded-xl bg-sage/10 flex items-center justify-center">
@@ -154,7 +154,7 @@
           </svg>
         </div>
         <p class="font-medium text-navy text-sm">1. Entrez l'adresse</p>
-        <p class="text-xs text-navy/40 mt-1">Recherche intelligente avec autocompletion</p>
+        <p class="text-xs text-navy/40 mt-1">Recherche intelligente avec autocomplétion</p>
       </div>
       <div style="animation: fadeInUp 0.5s ease-out 200ms both;">
         <div class="w-12 h-12 mx-auto mb-3 rounded-xl bg-sage/10 flex items-center justify-center">
@@ -163,7 +163,7 @@
           </svg>
         </div>
         <p class="font-medium text-navy text-sm">2. Analyse automatique</p>
-        <p class="text-xs text-navy/40 mt-1">Croisement des ventes DVF a proximite</p>
+        <p class="text-xs text-navy/40 mt-1">Croisement des ventes DVF à proximité</p>
       </div>
       <div style="animation: fadeInUp 0.5s ease-out 300ms both;">
         <div class="w-12 h-12 mx-auto mb-3 rounded-xl bg-sage/10 flex items-center justify-center">
@@ -171,7 +171,7 @@
             <path d="M12 2L15.1 8.3L22 9.3L17 14.1L18.2 21L12 17.8L5.8 21L7 14.1L2 9.3L8.9 8.3L12 2Z"/>
           </svg>
         </div>
-        <p class="font-medium text-navy text-sm">3. Resultat detaille</p>
+        <p class="font-medium text-navy text-sm">3. Résultat détaillé</p>
         <p class="text-xs text-navy/40 mt-1">Fourchette de prix, carte et comparables</p>
       </div>
     </div>

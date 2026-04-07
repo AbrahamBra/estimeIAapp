@@ -40,7 +40,7 @@
   const scores: ScoreItem[] = $derived(() => {
     const items: ScoreItem[] = [
       {
-        label: 'Fiabilite',
+        label: 'Fiabilité',
         value: estimation.confidence_score,
         suffix: '/100',
         color: estimation.confidence_score >= 70 ? 'oklch(0.58 0.14 155)' : estimation.confidence_score >= 40 ? 'oklch(0.75 0.15 75)' : 'oklch(0.65 0.18 30)',
@@ -52,7 +52,7 @@
         color: volumeScore() >= 70 ? 'oklch(0.58 0.14 155)' : volumeScore() >= 40 ? 'oklch(0.75 0.15 75)' : 'oklch(0.65 0.18 30)',
       },
       {
-        label: 'Recence',
+        label: 'Récence',
         value: recentPct(),
         suffix: '%',
         color: recentPct() >= 70 ? 'oklch(0.58 0.14 155)' : recentPct() >= 40 ? 'oklch(0.75 0.15 75)' : 'oklch(0.65 0.18 30)',
@@ -86,7 +86,7 @@
   });
 </script>
 
-<div class="bg-white rounded-xl border border-navy/10 p-5">
+<div>
   <div class="flex items-center justify-between mb-4">
     <p class="text-xs font-medium text-navy/50">Score global de l'estimation</p>
     <div class="flex items-center gap-2">

@@ -15,7 +15,7 @@
 
   const riskLevel = risks.risks.length === 0 ? 'low' : risks.risks.length <= 2 ? 'moderate' : 'elevated';
   const levelColor = riskLevel === 'low' ? 'oklch(0.58 0.14 155)' : riskLevel === 'moderate' ? 'oklch(0.75 0.15 75)' : 'oklch(0.65 0.18 30)';
-  const levelLabel = riskLevel === 'low' ? 'Faible' : riskLevel === 'moderate' ? 'Modere' : 'Eleve';
+  const levelLabel = riskLevel === 'low' ? 'Faible' : riskLevel === 'moderate' ? 'Modéré' : 'Élevé';
 
   // Top catnat types sorted by count
   const topCatnat = Object.entries(risks.catnat_types)
@@ -40,7 +40,7 @@
         </svg>
         {levelLabel}
       </span>
-      <span class="text-xs text-navy/40">{risks.risks.length} risque{risks.risks.length > 1 ? 's' : ''} identifies</span>
+      <span class="text-xs text-navy/40">{risks.risks.length} risque{risks.risks.length > 1 ? 's' : ''} identifiés</span>
     </div>
     <div class="flex items-center gap-2">
       <span class="text-xs text-navy/30">{risks.catnat_count} CatNat</span>
@@ -68,13 +68,13 @@
           </div>
         </div>
       {:else}
-        <p class="text-xs text-navy/40">Aucun risque naturel ou technologique identifie sur cette commune.</p>
+        <p class="text-xs text-navy/40">Aucun risque naturel ou technologique identifié sur cette commune.</p>
       {/if}
 
       <!-- Catnat history -->
       {#if topCatnat.length > 0}
         <div>
-          <p class="text-xs text-navy/40 mb-2">Historique catastrophes naturelles ({risks.catnat_count} arretes)</p>
+          <p class="text-xs text-navy/40 mb-2">Historique catastrophes naturelles ({risks.catnat_count} arrêtés)</p>
           <div class="space-y-1">
             {#each topCatnat as [type, count]}
               <div class="flex items-center gap-2">
@@ -92,7 +92,7 @@
         </div>
       {/if}
 
-      <p class="text-[10px] text-navy/20">Source : Georisques (BRGM) — base GASPAR</p>
+      <p class="text-[10px] text-navy/20">Source : Géorisques (BRGM) — base GASPAR</p>
     </div>
   {/if}
 </button>
