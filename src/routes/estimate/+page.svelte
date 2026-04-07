@@ -12,8 +12,9 @@
   import RiskBadges from '$lib/components/RiskBadges.svelte';
   import PropertyScore from '$lib/components/PropertyScore.svelte';
   import CommuneContext from '$lib/components/CommuneContext.svelte';
+  import CharacteristicsImpact from '$lib/components/CharacteristicsImpact.svelte';
   import Map from '$lib/components/Map.svelte';
-  import { computePriceRange } from '$lib/utils/estimation';
+  import { computePriceRange, applyCoefficient } from '$lib/utils/estimation';
   import type { Comparable } from '$lib/types';
 
   let { data } = $props();
@@ -31,14 +32,18 @@
     excludeCovid ? data.comparables.filter(c => !c.covid_period) : data.comparables
   );
 
-  const filteredEstimation = $derived(
-    excludeCovid && filteredComparables.length > 0
-      ? computePriceRange(
-          filteredComparables.map(c => ({ prix_m2: c.prix_m2, date_mutation: c.date_mutation, distance: c.distance })),
-          data.surfaceM2
-        )
-      : data.estimation
-  );
+  const filteredEstimation = $derived.by(() => {
+    if (excludeCovid && filteredComparables.length > 0) {
+      const base = computePriceRange(
+        filteredComparables.map(c => ({ prix_m2: c.prix_m2, date_mutation: c.date_mutation, distance: c.distance })),
+        data.surfaceM2
+      );
+      return data.characteristicsResult
+        ? applyCoefficient(base, data.characteristicsResult.coefficient)
+        : base;
+    }
+    return data.estimation;
+  });
 
   function changeRadius(newRadius: number) {
     const params = new URLSearchParams($page.url.searchParams);
@@ -124,6 +129,16 @@
         </span>
       </label>
     </div>
+
+    <!-- Characteristics impact -->
+    {#if data.characteristicsResult}
+      <div class="mb-4">
+        <CharacteristicsImpact
+          breakdown={data.characteristicsResult.breakdown}
+          coefficient={data.characteristicsResult.coefficient}
+        />
+      </div>
+    {/if}
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 print:block">
       <!-- Left column: Hero + Map + Charts -->
