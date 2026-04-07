@@ -21,7 +21,7 @@
     });
     if (surface) params.set('surface', surface);
     if (rooms) params.set('rooms', rooms);
-    goto(`/estimate?${params.toString()}`);
+    goto(`/estimate/characteristics?${params.toString()}`);
   }
 </script>
 
@@ -52,6 +52,11 @@
 
   <!-- Form card -->
   <div class="bg-white shadow-lg rounded-2xl p-8 text-left" style="animation: fadeInUp 0.6s ease-out;">
+    <div class="flex gap-2 mb-2">
+      <div class="flex-1 h-1 rounded-full bg-navy"></div>
+      <div class="flex-1 h-1 rounded-full bg-navy/15"></div>
+    </div>
+    <p class="text-xs text-navy/40 mb-4">Étape 1/2 — Votre bien</p>
     <form onsubmit={(e) => handleSubmit(e)} class="space-y-5">
       <div>
         <label for="address" class="block text-sm font-medium text-navy mb-2">Adresse du bien</label>
