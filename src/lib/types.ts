@@ -104,3 +104,26 @@ export interface CommuneContext {
   water_analyses: number | null;
   water_conform_pct: number | null;
 }
+
+export interface PropertyCharacteristics {
+  floor: 'rdc' | '1-2' | '3-4' | '5+' | 'last' | null;
+  elevator: boolean | null;
+  outdoor: 'none' | 'balcony' | 'terrace' | 'garden' | 'loggia' | null;
+  view: 'vis-a-vis' | 'street' | 'clear' | 'panoramic' | null;
+  exposure: 'north' | 'east-west' | 'south' | 'dual' | null;
+  condition: 'to-renovate' | 'to-refresh' | 'good' | 'like-new' | null;
+  parking: 'none' | 'outdoor' | 'garage' | 'box' | null;
+  noise: 'noisy' | 'normal' | 'quiet' | 'very-quiet' | null;
+  pool: boolean | null;
+}
+
+export interface CharacteristicsBreakdownItem {
+  label: string;
+  value: string;
+  coefficient: number;
+}
+
+export interface CharacteristicsResult {
+  coefficient: number;
+  breakdown: CharacteristicsBreakdownItem[];
+}
