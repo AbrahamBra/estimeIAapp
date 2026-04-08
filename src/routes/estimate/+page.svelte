@@ -14,8 +14,12 @@
   import CommuneContext from '$lib/components/CommuneContext.svelte';
   import CharacteristicsImpact from '$lib/components/CharacteristicsImpact.svelte';
   import Map from '$lib/components/Map.svelte';
+  import ErrorMargin from '$lib/components/ErrorMargin.svelte';
+  import LegalDisclaimer from '$lib/components/LegalDisclaimer.svelte';
+  import EstimationAdjustments from '$lib/components/EstimationAdjustments.svelte';
+  import LowDataWarning from '$lib/components/LowDataWarning.svelte';
   import { computePriceRange, applyCoefficient } from '$lib/utils/estimation';
-  import type { Comparable, ProFeature } from '$lib/types';
+  import type { Comparable, ProFeature, DpeClass } from '$lib/types';
   import LockedFeature from '$lib/components/LockedFeature.svelte';
   import WaitlistModal from '$lib/components/WaitlistModal.svelte';
   import RentEstimateBadge from '$lib/components/RentEstimate.svelte';
@@ -47,11 +51,19 @@
     excludeCovid ? data.comparables.filter(c => !c.covid_period) : data.comparables
   );
 
+  const dpeClass: DpeClass | null = data.dpe?.dominant_dpe ?? null;
+
   const filteredEstimation = $derived.by(() => {
     if (excludeCovid && filteredComparables.length > 0) {
       const base = computePriceRange(
-        filteredComparables.map(c => ({ prix_m2: c.prix_m2, date_mutation: c.date_mutation, distance: c.distance })),
-        data.surfaceM2
+        filteredComparables.map(c => ({
+          prix_m2: c.prix_m2,
+          date_mutation: c.date_mutation,
+          distance: c.distance,
+          surface: c.surface,
+        })),
+        data.surfaceM2,
+        { dpeClass, applyTemporal: true, applySurfaceElasticity: true }
       );
       return data.characteristicsResult
         ? applyCoefficient(base, data.characteristicsResult.coefficient)
@@ -79,6 +91,9 @@
       <p class="text-navy/50 text-sm mt-1">
         {data.propertyType}
         {#if data.surfaceM2} &middot; {data.surfaceM2} m&sup2;{/if}
+        {#if dpeClass}
+          &middot; DPE {dpeClass}
+        {/if}
       </p>
       <!-- Radius segmented control -->
       <div class="inline-flex items-center bg-navy/5 rounded-full p-0.5 mt-3 print:hidden">
@@ -103,7 +118,7 @@
           <path d="M6 9V2h12v7M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2" stroke-linecap="round" stroke-linejoin="round"/>
           <rect x="6" y="14" width="12" height="8" rx="1"/>
         </svg>
-        Rapport
+        Rapport PDF
       </button>
       <a href="/" class="inline-flex items-center gap-1.5 text-sm text-sage hover:text-sage/80 bg-sage/5 hover:bg-sage/10 px-3.5 py-2 rounded-lg transition-all duration-300">
         <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
@@ -117,8 +132,14 @@
   <!-- Print header (hidden on screen) -->
   <div class="hidden print:block mb-6 pb-4 border-b border-navy/10">
     <div class="flex justify-between items-center">
-      <p class="text-sm text-navy/40">EstimeIA — Rapport d'estimation</p>
-      <p class="text-sm text-navy/40">{new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
+      <div>
+        <p class="text-lg font-display font-bold text-navy">EstimeIA — Rapport d'estimation</p>
+        <p class="text-xs text-navy/40 mt-1">{data.address} &middot; {data.propertyType}{data.surfaceM2 ? ` &middot; ${data.surfaceM2} m²` : ''}</p>
+      </div>
+      <div class="text-right">
+        <p class="text-sm text-navy/40">{new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
+        <p class="text-[10px] text-navy/25 mt-0.5">Estimation indicative — ne constitue pas un avis de valeur</p>
+      </div>
     </div>
   </div>
 
@@ -136,11 +157,17 @@
     </div>
   {:else if filteredEstimation}
 
+    <!-- Low data warning -->
+    <LowDataWarning count={filteredComparables.length} radiusM={data.radiusM} />
+
     <!-- ===== HERO SECTION: Estimation ===== -->
-    <section class="relative rounded-2xl bg-gradient-to-br from-navy/[0.03] via-sage/[0.04] to-ivory p-6 md:p-8 mb-12 border border-navy/5">
+    <section class="relative rounded-2xl bg-gradient-to-br from-navy/[0.03] via-sage/[0.04] to-ivory p-6 md:p-8 mb-8 border border-navy/5">
       <div class="flex items-center gap-2 mb-6">
         <div class="w-1.5 h-6 rounded-full bg-sage"></div>
         <h2 class="font-display text-lg font-bold text-navy">Estimation</h2>
+        {#if filteredEstimation.error_margin_pct}
+          <span class="text-xs font-mono text-navy/30 ml-auto">&pm;{filteredEstimation.error_margin_pct}%</span>
+        {/if}
       </div>
 
       <!-- Characteristics impact (above the price) -->
@@ -155,6 +182,9 @@
 
       <!-- Price gauge hero -->
       <PriceGauge estimation={filteredEstimation} surfaceM2={data.surfaceM2} />
+
+      <!-- Estimation adjustments (DPE, temporal) -->
+      <EstimationAdjustments estimation={filteredEstimation} />
 
       <!-- Covid toggle -->
       <div class="flex items-center gap-3 mt-4 print:hidden">
@@ -172,6 +202,12 @@
         </label>
       </div>
     </section>
+
+    <!-- ===== Error Margin + Legal ===== -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+      <ErrorMargin estimation={filteredEstimation} />
+      <LegalDisclaimer />
+    </div>
 
     <!-- ===== SECTION: Analyse de marché ===== -->
     <section class="mb-12">
@@ -361,9 +397,26 @@
 
     <!-- Print footer -->
     <div class="hidden print:block mt-8 pt-4 border-t border-navy/10">
-      <p class="text-xs text-navy/30 text-center">
-        Rapport généré par EstimeIA le {new Date().toLocaleDateString('fr-FR')} — Données DVF (DGFiP), DPE (ADEME), Risques (Géorisques)
-      </p>
+      <div class="flex justify-between items-end">
+        <div>
+          <p class="text-xs text-navy/30">
+            Rapport généré par EstimeIA le {new Date().toLocaleDateString('fr-FR')}
+          </p>
+          <p class="text-[10px] text-navy/20 mt-1">
+            Sources : DVF (DGFiP), DPE (ADEME), Géorisques, BPE (INSEE), Carte des Loyers, SITADEL, Cadastre (IGN)
+          </p>
+        </div>
+        <div class="text-right">
+          <p class="text-[10px] text-navy/20">
+            Estimation indicative — ne constitue pas un avis de valeur au sens de la Charte de l'Expertise
+          </p>
+          {#if filteredEstimation.error_margin_pct}
+            <p class="text-[10px] text-navy/20">
+              Marge d'erreur estimée : &pm;{filteredEstimation.error_margin_pct}%
+            </p>
+          {/if}
+        </div>
+      </div>
     </div>
   {:else}
     <div class="text-center py-20">

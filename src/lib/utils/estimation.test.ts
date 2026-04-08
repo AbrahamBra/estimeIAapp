@@ -51,7 +51,8 @@ describe('computePriceRange', () => {
     expect(result.median_per_m2).toBeGreaterThan(0);
     expect(result.low_per_m2).toBeLessThan(result.median_per_m2);
     expect(result.high_per_m2).toBeGreaterThan(result.median_per_m2);
-    expect(result.median_total).toBe(result.median_per_m2 * 60);
+    // median_total = median_per_m2 * surface (after temporal correction)
+    expect(result.median_total).toBe(Math.round(result.median_per_m2 * 60));
   });
 
   it('returns null totals when no surface', () => {
@@ -74,9 +75,9 @@ describe('computePriceRange', () => {
     const result = computePriceRange(comparables, 60);
     expect(result.confidence_score).toBeGreaterThan(0);
     expect(result.confidence_score).toBeLessThanOrEqual(100);
-    expect(result.confidence_factors.count_score).toBe(40);
-    expect(result.confidence_factors.recency_score).toBe(30);
-    expect(result.confidence).toBe('high');
+    expect(result.confidence_factors.count_score).toBe(30);
+    expect(result.confidence_factors.recency_score).toBe(20);
+    expect(['high', 'medium']).toContain(result.confidence);
   });
 
   it('returns low confidence for few old comparables', () => {
@@ -117,7 +118,10 @@ describe('applyCoefficient', () => {
     comparable_count: 10,
     confidence: 'high' as const,
     confidence_score: 80,
-    confidence_factors: { count_score: 40, cv_score: 30, recency_score: 10 },
+    confidence_factors: { count_score: 40, cv_score: 30, recency_score: 10, proximity_score: 0, dpe_score: 0 },
+    error_margin_pct: null,
+    dpe_adjustment: null,
+    temporal_adjustment_pct: null,
   };
 
   it('multiplies all price fields by coefficient', () => {

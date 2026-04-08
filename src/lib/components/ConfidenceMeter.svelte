@@ -1,7 +1,7 @@
 <script lang="ts">
   let { score, factors }: {
     score: number;
-    factors: { count_score: number; cv_score: number; recency_score: number };
+    factors: { count_score: number; cv_score: number; recency_score: number; proximity_score: number; dpe_score: number };
   } = $props();
 
   let expanded = $state(false);
@@ -45,23 +45,37 @@
     <div class="flex items-center gap-2">
       <span class="text-xs text-navy/40 w-20">Volume</span>
       <div class="flex-1 h-1.5 rounded-full bg-navy-light overflow-hidden">
-        <div class="h-full rounded-full bg-sage transition-all duration-700" style="width: {(factors.count_score / 40) * 100}%"></div>
+        <div class="h-full rounded-full bg-sage transition-all duration-700" style="width: {(factors.count_score / 30) * 100}%"></div>
       </div>
-      <span class="text-xs text-navy/30 w-8 text-right">{factors.count_score}/40</span>
+      <span class="text-xs text-navy/30 w-8 text-right">{factors.count_score}/30</span>
     </div>
     <div class="flex items-center gap-2">
       <span class="text-xs text-navy/40 w-20">Cohérence</span>
       <div class="flex-1 h-1.5 rounded-full bg-navy-light overflow-hidden">
-        <div class="h-full rounded-full bg-sage transition-all duration-700" style="width: {(factors.cv_score / 30) * 100}%"></div>
+        <div class="h-full rounded-full bg-sage transition-all duration-700" style="width: {(factors.cv_score / 25) * 100}%"></div>
       </div>
-      <span class="text-xs text-navy/30 w-8 text-right">{factors.cv_score}/30</span>
+      <span class="text-xs text-navy/30 w-8 text-right">{factors.cv_score}/25</span>
     </div>
     <div class="flex items-center gap-2">
       <span class="text-xs text-navy/40 w-20">Récence</span>
       <div class="flex-1 h-1.5 rounded-full bg-navy-light overflow-hidden">
-        <div class="h-full rounded-full bg-sage transition-all duration-700" style="width: {(factors.recency_score / 30) * 100}%"></div>
+        <div class="h-full rounded-full bg-sage transition-all duration-700" style="width: {(factors.recency_score / 20) * 100}%"></div>
       </div>
-      <span class="text-xs text-navy/30 w-8 text-right">{factors.recency_score}/30</span>
+      <span class="text-xs text-navy/30 w-8 text-right">{factors.recency_score}/20</span>
+    </div>
+    <div class="flex items-center gap-2">
+      <span class="text-xs text-navy/40 w-20">Proximité</span>
+      <div class="flex-1 h-1.5 rounded-full bg-navy-light overflow-hidden">
+        <div class="h-full rounded-full bg-sage transition-all duration-700" style="width: {(factors.proximity_score / 15) * 100}%"></div>
+      </div>
+      <span class="text-xs text-navy/30 w-8 text-right">{factors.proximity_score}/15</span>
+    </div>
+    <div class="flex items-center gap-2">
+      <span class="text-xs text-navy/40 w-20">DPE</span>
+      <div class="flex-1 h-1.5 rounded-full bg-navy-light overflow-hidden">
+        <div class="h-full rounded-full bg-sage transition-all duration-700" style="width: {(factors.dpe_score / 10) * 100}%"></div>
+      </div>
+      <span class="text-xs text-navy/30 w-8 text-right">{factors.dpe_score}/10</span>
     </div>
   </div>
 {/if}

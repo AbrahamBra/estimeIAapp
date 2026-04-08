@@ -51,7 +51,12 @@ export interface PriceEstimation {
     count_score: number;
     cv_score: number;
     recency_score: number;
+    proximity_score: number;
+    dpe_score: number;
   };
+  error_margin_pct: number | null;
+  dpe_adjustment: DpeAdjustment | null;
+  temporal_adjustment_pct: number | null;
 }
 
 export interface YearlyTrend {
@@ -78,6 +83,17 @@ export interface ProximitySummary {
 }
 
 export type DpeClass = 'A' | 'B' | 'C' | 'D' | 'E' | 'F' | 'G';
+
+export interface DpeAdjustment {
+  dpe_class: DpeClass;
+  coefficient: number;
+  label: string;
+}
+
+export interface TemporalIndex {
+  year: number;
+  index: number; // 1.0 = reference year (2025)
+}
 
 export interface DpeResult {
   count: number;

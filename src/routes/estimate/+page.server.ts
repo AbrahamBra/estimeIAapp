@@ -14,7 +14,7 @@ import { postcodeToArrondissement, postcodeToMainCommune, postcodeToInsee } from
 import { config } from '$lib/config';
 import { parseCharacteristics, computeCharacteristicsCoefficient } from '$lib/config/coefficients';
 import { applyCoefficient } from '$lib/utils/estimation';
-import type { Comparable, YearlyTrend } from '$lib/types';
+import type { Comparable, YearlyTrend, DpeClass } from '$lib/types';
 import type { PageServerLoad } from './$types';
 
 function computeTrend(comparables: Comparable[]): YearlyTrend[] {
@@ -61,7 +61,7 @@ export const load: PageServerLoad = async ({ url }) => {
   }
 
   const dept = postcode.substring(0, 2);
-  const isAlsaceMoselle = config.ALSACE_MOSELLE_DEPTS.includes(dept);
+  const isAlsaceMoselle = (config.ALSACE_MOSELLE_DEPTS as readonly string[]).includes(dept);
 
   let comparables: Comparable[] = [];
   let dvfError = false;
@@ -80,23 +80,6 @@ export const load: PageServerLoad = async ({ url }) => {
     dvfError = true;
   }
 
-  const baseEstimation = comparables.length > 0
-    ? computePriceRange(
-        comparables.map((c) => ({
-          prix_m2: c.prix_m2,
-          date_mutation: c.date_mutation,
-          distance: c.distance,
-        })),
-        surfaceM2
-      )
-    : null;
-
-  const estimation = baseEstimation && characteristicsResult
-    ? applyCoefficient(baseEstimation, characteristicsResult.coefficient)
-    : baseEstimation;
-
-  const trend = computeTrend(comparables);
-
   // Resolve INSEE codes for loyers (arrondissement) and permits (main commune)
   const inseeArrondissement = postcodeToArrondissement(postcode);
   const inseeMainCommune = postcodeToMainCommune(postcode);
@@ -107,11 +90,51 @@ export const load: PageServerLoad = async ({ url }) => {
     fetchDpeNearby(address, postcode),
     fetchRisks(postcode),
     fetchCommuneContext(postcode),
-    fetchRentEstimate(inseeArrondissement, propertyType, surfaceM2, estimation?.median_per_m2 ?? null),
+    fetchRentEstimate(inseeArrondissement, propertyType, surfaceM2, null), // compute yield after estimation
     fetchPermits(inseeMainCommune),
     fetchCadastre(lat, lon),
     fetchUrbanisme(lat, lon),
   ]);
+
+  // Extract dominant DPE class for price adjustment
+  const dpeClass: DpeClass | null = dpe?.dominant_dpe ?? null;
+
+  // Compute estimation WITH temporal correction, surface elasticity, and DPE adjustment
+  const baseEstimation = comparables.length > 0
+    ? computePriceRange(
+        comparables.map((c) => ({
+          prix_m2: c.prix_m2,
+          date_mutation: c.date_mutation,
+          distance: c.distance,
+          surface: c.surface,
+        })),
+        surfaceM2,
+        {
+          dpeClass,
+          applyTemporal: true,
+          applySurfaceElasticity: true,
+        }
+      )
+    : null;
+
+  // Apply characteristics coefficient on top
+  const estimation = baseEstimation && characteristicsResult
+    ? applyCoefficient(baseEstimation, characteristicsResult.coefficient)
+    : baseEstimation;
+
+  // Recompute rent yield with actual estimation price
+  let rentEstimate = rentData;
+  if (rentData && estimation) {
+    // Update rendement_brut with actual estimated price
+    if (rentData.loyer_mensuel && estimation.median_total) {
+      rentEstimate = {
+        ...rentData,
+        rendement_brut: Math.round(((rentData.loyer_mensuel * 12) / estimation.median_total) * 10000) / 100,
+      };
+    }
+  }
+
+  const trend = computeTrend(comparables);
 
   // Copropriete depends on cadastre result (needs reference_cadastrale for RNIC lookup)
   const copropriete = cadastre?.reference_cadastrale
@@ -138,7 +161,7 @@ export const load: PageServerLoad = async ({ url }) => {
     dpe,
     risks,
     communeCtx,
-    rentEstimate: rentData,
+    rentEstimate,
     permits,
     cadastre,
     urbanisme,
