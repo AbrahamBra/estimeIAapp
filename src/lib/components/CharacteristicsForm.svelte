@@ -16,19 +16,23 @@
     options: { value: string; label: string }[];
   };
 
-  const criteria: Criterion[] = [
-    {
-      key: 'floor',
-      label: 'Étage',
-      icon: '🏢',
-      options: [
-        { value: 'rdc', label: 'RDC' },
-        { value: '1-2', label: '1-2' },
-        { value: '3-4', label: '3-4' },
-        { value: '5+', label: '5+' },
-        { value: 'last', label: 'Dernier' },
-      ],
-    },
+  const isAppartement = $derived(propertyType === 'Appartement');
+
+  // Floor criteria only applies to apartments — a house is always ground level
+  const floorCriterion: Criterion = {
+    key: 'floor',
+    label: 'Étage',
+    icon: '🏢',
+    options: [
+      { value: 'rdc', label: 'RDC' },
+      { value: '1-2', label: '1-2' },
+      { value: '3-4', label: '3-4' },
+      { value: '5+', label: '5+' },
+      { value: 'last', label: 'Dernier' },
+    ],
+  };
+
+  const baseCriteria: Criterion[] = [
     {
       key: 'outdoor',
       label: 'Extérieur',
@@ -98,11 +102,24 @@
     },
   ];
 
+  // Merge criteria: floor only for apartments
+  const criteria: Criterion[] = $derived(
+    isAppartement ? [floorCriterion, ...baseCriteria] : baseCriteria
+  );
+
   const showElevator = $derived(
-    characteristics.floor === '5+' || characteristics.floor === 'last'
+    isAppartement && (characteristics.floor === '5+' || characteristics.floor === 'last')
   );
 
   const showPool = $derived(propertyType === 'Maison');
+
+  // Reset floor/elevator when switching to Maison (defensive)
+  $effect(() => {
+    if (!isAppartement) {
+      characteristics.floor = null;
+      characteristics.elevator = null;
+    }
+  });
 
   function toggleChip(key: keyof PropertyCharacteristics, value: string) {
     if (characteristics[key] === value) {

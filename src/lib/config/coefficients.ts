@@ -82,8 +82,10 @@ export function computeCharacteristicsCoefficient(
 ): CharacteristicsResult {
   const breakdown: CharacteristicsBreakdownItem[] = [];
   let product = 1.0;
+  const isAppartement = propertyType === 'Appartement';
 
-  if (chars.floor !== null) {
+  // Floor & elevator: only applies to apartments (a house is always ground-level)
+  if (isAppartement && chars.floor !== null) {
     if (chars.floor in FLOOR_ELEVATOR) {
       const elevatorEntry = FLOOR_ELEVATOR[chars.floor];
       const hasElevator = chars.elevator === true;

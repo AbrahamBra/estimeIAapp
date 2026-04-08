@@ -14,6 +14,8 @@ import { postcodeToArrondissement, postcodeToMainCommune, postcodeToInsee } from
 import { config } from '$lib/config';
 import { parseCharacteristics, computeCharacteristicsCoefficient } from '$lib/config/coefficients';
 import { applyCoefficient } from '$lib/utils/estimation';
+import { isPappersConfigured, fetchProprietaire } from '$lib/api/pappers';
+import type { ProprietaireResult } from '$lib/api/pappers';
 import type { Comparable, YearlyTrend, DpeClass } from '$lib/types';
 import type { PageServerLoad } from './$types';
 
@@ -141,6 +143,14 @@ export const load: PageServerLoad = async ({ url }) => {
     ? await fetchCopropriete(cadastre.reference_cadastrale)
     : null;
 
+  // Pappers: fetch proprietaire data if API is configured (Pro feature)
+  let proprietaire: ProprietaireResult | null = null;
+  const hasPappers = isPappersConfigured();
+  if (hasPappers && copropriete?.nom) {
+    // Try searching by copropriete name (often matches SCI names)
+    proprietaire = await fetchProprietaire(copropriete.nom, postcode);
+  }
+
   return {
     address,
     postcode,
@@ -166,5 +176,7 @@ export const load: PageServerLoad = async ({ url }) => {
     cadastre,
     urbanisme,
     copropriete,
+    proprietaire,
+    hasPappers,
   };
 };

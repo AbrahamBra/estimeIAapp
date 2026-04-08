@@ -28,17 +28,33 @@
   import UrbanismeBadge from '$lib/components/UrbanismeBadge.svelte';
   import CoproprieteBadge from '$lib/components/CoproprieteBadge.svelte';
   import MockProprietaires from '$lib/components/MockProprietaires.svelte';
+  import ProprietaireBadge from '$lib/components/ProprietaireBadge.svelte';
+  import PdfExportModal from '$lib/components/PdfExportModal.svelte';
 
   let { data } = $props();
   let selectedComparable: Comparable | null = $state(null);
   let mounted = $state(false);
   let excludeCovid = $state(false);
   let showWaitlist = $state(false);
+  let showPdfExport = $state(false);
   let waitlistFeature: ProFeature = $state('proprietaires');
+
+  // Branding state for PDF export
+  let pdfBranding: {
+    agentName: string; agencyName: string; phone: string; email: string; logoUrl: string;
+  } = $state({ agentName: '', agencyName: '', phone: '', email: '', logoUrl: '' });
 
   function openWaitlist(feature: ProFeature) {
     waitlistFeature = feature;
     showWaitlist = true;
+  }
+
+  function handlePdfExport(branding: typeof pdfBranding) {
+    pdfBranding = branding;
+    // Allow DOM to update with branding, then print
+    requestAnimationFrame(() => {
+      setTimeout(() => window.print(), 100);
+    });
   }
 
   onMount(() => { mounted = true; });
@@ -78,9 +94,6 @@
     goto(`/estimate?${params.toString()}`);
   }
 
-  function handlePrint() {
-    window.print();
-  }
 </script>
 
 <div class="max-w-6xl mx-auto px-6 py-8">
@@ -112,7 +125,7 @@
       <button
         type="button"
         class="inline-flex items-center gap-1.5 text-sm text-navy/50 hover:text-navy bg-navy/5 hover:bg-navy/10 px-3.5 py-2 rounded-lg transition-all duration-300"
-        onclick={handlePrint}
+        onclick={() => showPdfExport = true}
       >
         <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
           <path d="M6 9V2h12v7M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -129,16 +142,38 @@
     </div>
   </div>
 
-  <!-- Print header (hidden on screen) -->
-  <div class="hidden print:block mb-6 pb-4 border-b border-navy/10">
-    <div class="flex justify-between items-center">
+  <!-- Print header (hidden on screen, shown in PDF) -->
+  <div class="hidden print:block mb-6 pb-4 border-b-2 border-navy/10">
+    <div class="flex justify-between items-start">
       <div>
-        <p class="text-lg font-display font-bold text-navy">EstimeIA — Rapport d'estimation</p>
-        <p class="text-xs text-navy/40 mt-1">{data.address} &middot; {data.propertyType}{data.surfaceM2 ? ` &middot; ${data.surfaceM2} m²` : ''}</p>
+        {#if pdfBranding.agencyName}
+          <div class="flex items-center gap-3 mb-2">
+            {#if pdfBranding.logoUrl}
+              <img src={pdfBranding.logoUrl} alt="Logo" class="h-10 w-auto object-contain" />
+            {/if}
+            <div>
+              <p class="text-lg font-display font-bold text-navy">{pdfBranding.agencyName}</p>
+              {#if pdfBranding.agentName}
+                <p class="text-xs text-navy/50">{pdfBranding.agentName}</p>
+              {/if}
+            </div>
+          </div>
+          {#if pdfBranding.phone || pdfBranding.email}
+            <p class="text-[10px] text-navy/40">
+              {#if pdfBranding.phone}{pdfBranding.phone}{/if}
+              {#if pdfBranding.phone && pdfBranding.email} &middot; {/if}
+              {#if pdfBranding.email}{pdfBranding.email}{/if}
+            </p>
+          {/if}
+        {:else}
+          <p class="text-lg font-display font-bold text-navy">Rapport d'estimation</p>
+        {/if}
+        <p class="text-xs text-navy/40 mt-2">{data.address} &middot; {data.propertyType}{data.surfaceM2 ? ` &middot; ${data.surfaceM2} m²` : ''}</p>
       </div>
       <div class="text-right">
         <p class="text-sm text-navy/40">{new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
         <p class="text-[10px] text-navy/25 mt-0.5">Estimation indicative — ne constitue pas un avis de valeur</p>
+        <p class="text-[10px] text-navy/15 mt-0.5">Généré avec EstimeIA</p>
       </div>
     </div>
   </div>
@@ -370,22 +405,46 @@
       {/if}
     </section>
 
-    <!-- ===== SECTION: Données Pro ===== -->
-    <section class="mb-12 print:hidden">
-      <div class="flex items-center gap-2 mb-6">
-        <div class="w-1.5 h-6 rounded-full" style="background: linear-gradient(180deg, oklch(0.75 0.12 85), oklch(0.65 0.14 65));"></div>
-        <h2 class="font-display text-lg font-bold text-navy">Données Pro</h2>
-        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold tracking-wider uppercase text-white"
-          style="background: linear-gradient(135deg, oklch(0.75 0.12 85), oklch(0.65 0.14 65));"
-        >PRO</span>
-      </div>
+    <!-- ===== SECTION: Propriétaire (Pro) ===== -->
+    {#if data.proprietaire}
+      <!-- Real Pappers data available -->
+      <section class="mb-12">
+        <div class="flex items-center gap-2 mb-6">
+          <div class="w-1.5 h-6 rounded-full" style="background: linear-gradient(180deg, oklch(0.75 0.12 85), oklch(0.65 0.14 65));"></div>
+          <h2 class="font-display text-lg font-bold text-navy">Propriétaire</h2>
+          <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold tracking-wider uppercase text-white"
+            style="background: linear-gradient(135deg, oklch(0.58 0.14 155), oklch(0.50 0.12 170));"
+          >PAPPERS</span>
+        </div>
+        <div class="max-w-lg">
+          <ProprietaireBadge proprietaire={data.proprietaire} />
+        </div>
+      </section>
+    {:else}
+      <!-- No Pappers token or no result: show locked feature -->
+      <section class="mb-12 print:hidden">
+        <div class="flex items-center gap-2 mb-6">
+          <div class="w-1.5 h-6 rounded-full" style="background: linear-gradient(180deg, oklch(0.75 0.12 85), oklch(0.65 0.14 65));"></div>
+          <h2 class="font-display text-lg font-bold text-navy">Données Pro</h2>
+          <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold tracking-wider uppercase text-white"
+            style="background: linear-gradient(135deg, oklch(0.75 0.12 85), oklch(0.65 0.14 65));"
+          >PRO</span>
+        </div>
 
-      <div class="max-w-md mx-auto">
-        <LockedFeature title="Propriétaire" teaser="Propriétaire identifié — SCI ••••••" feature="proprietaires" onunlock={openWaitlist}>
-          <MockProprietaires />
-        </LockedFeature>
-      </div>
-    </section>
+        <div class="max-w-md mx-auto">
+          <LockedFeature title="Propriétaire" teaser="Propriétaire identifié — SCI ••••••" feature="proprietaires" onunlock={openWaitlist}>
+            <MockProprietaires />
+          </LockedFeature>
+        </div>
+      </section>
+    {/if}
+
+    <!-- PDF export modal -->
+    <PdfExportModal
+      address={data.address}
+      bind:open={showPdfExport}
+      onexport={handlePdfExport}
+    />
 
     <!-- Waitlist modal (shared) -->
     <WaitlistModal
@@ -396,11 +455,29 @@
     />
 
     <!-- Print footer -->
-    <div class="hidden print:block mt-8 pt-4 border-t border-navy/10">
+    <div class="hidden print:block mt-8 pt-4 border-t-2 border-navy/10">
+      {#if pdfBranding.agencyName}
+        <div class="flex justify-between items-center mb-3 pb-3 border-b border-navy/5">
+          <div class="flex items-center gap-2">
+            {#if pdfBranding.logoUrl}
+              <img src={pdfBranding.logoUrl} alt="Logo" class="h-6 w-auto object-contain" />
+            {/if}
+            <span class="text-xs font-medium text-navy/50">{pdfBranding.agencyName}</span>
+            {#if pdfBranding.agentName}
+              <span class="text-xs text-navy/30">— {pdfBranding.agentName}</span>
+            {/if}
+          </div>
+          <div class="text-[10px] text-navy/30">
+            {#if pdfBranding.phone}{pdfBranding.phone}{/if}
+            {#if pdfBranding.phone && pdfBranding.email} &middot; {/if}
+            {#if pdfBranding.email}{pdfBranding.email}{/if}
+          </div>
+        </div>
+      {/if}
       <div class="flex justify-between items-end">
         <div>
           <p class="text-xs text-navy/30">
-            Rapport généré par EstimeIA le {new Date().toLocaleDateString('fr-FR')}
+            Rapport généré {pdfBranding.agencyName ? `pour ${pdfBranding.agencyName}` : 'par EstimeIA'} le {new Date().toLocaleDateString('fr-FR')}
           </p>
           <p class="text-[10px] text-navy/20 mt-1">
             Sources : DVF (DGFiP), DPE (ADEME), Géorisques, BPE (INSEE), Carte des Loyers, SITADEL, Cadastre (IGN)
