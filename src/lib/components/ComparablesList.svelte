@@ -20,12 +20,13 @@
     }
   });
 
-  // Compute price terciles for color coding
+  // Compute price terciles for color coding (safe for 0-2 comparables)
   let terciles = $derived.by(() => {
+    if (comparables.length < 2) return { t1: Infinity, t2: Infinity };
     const prices = comparables.map(c => c.prix_m2).sort((a, b) => a - b);
     return {
-      t1: prices[Math.floor(prices.length / 3)] ?? 0,
-      t2: prices[Math.floor(prices.length * 2 / 3)] ?? Infinity,
+      t1: prices[Math.floor(prices.length / 3)] ?? prices[0],
+      t2: prices[Math.floor(prices.length * 2 / 3)] ?? prices[prices.length - 1],
     };
   });
 

@@ -102,6 +102,7 @@ export interface DpeResult {
   avg_conso_m2: number | null;
   avg_ges_m2: number | null;
   distribution: Record<string, number>;
+  fiabilite: 'indicatif' | 'fiable' | 'tres_fiable';
 }
 
 export interface RiskResult {

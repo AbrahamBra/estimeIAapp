@@ -69,13 +69,17 @@ export async function fetchDpeNearby(
     const dominantGes = (Object.entries(gesDist) as [string, number][])
       .sort((a, b) => b[1] - a[1])[0][0] as DpeResult['dominant_ges'];
 
+    const count = data.results.length;
+    const fiabilite = count >= 10 ? 'tres_fiable' : count >= 3 ? 'fiable' : 'indicatif';
+
     return {
-      count: data.results.length,
+      count,
       dominant_dpe: dominantDpe,
       dominant_ges: dominantGes,
       avg_conso_m2: consoCount > 0 ? Math.round(totalConso / consoCount) : null,
       avg_ges_m2: gesCount > 0 ? Math.round(totalGes / gesCount) : null,
       distribution: dpeDist,
+      fiabilite,
     };
   } catch {
     return null;

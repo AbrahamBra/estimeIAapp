@@ -99,7 +99,9 @@ export const load: PageServerLoad = async ({ url }) => {
   ]);
 
   // Extract dominant DPE class for price adjustment
-  const dpeClass: DpeClass | null = dpe?.dominant_dpe ?? null;
+  // Only use DPE for price correction if data is reliable (3+ diagnostics)
+  const dpeClass: DpeClass | null =
+    dpe && dpe.fiabilite !== 'indicatif' ? dpe.dominant_dpe : null;
 
   // Compute estimation WITH temporal correction, surface elasticity, and DPE adjustment
   const baseEstimation = comparables.length > 0

@@ -13,15 +13,25 @@ interface FetchDvfParams {
 }
 
 function getSurface(row: any): number | null {
-  if (row.surface_reelle_bati) return row.surface_reelle_bati;
-  const carrez = [
-    row.lot1_surface_carrez,
+  // Prefer surface_reelle_bati (official built surface)
+  if (row.surface_reelle_bati && row.surface_reelle_bati > 0) return row.surface_reelle_bati;
+
+  // Fallback: use lot1_surface_carrez ONLY (primary habitable lot)
+  // Do NOT sum multiple lots — lot2-5 may be parking, cellar, or auxiliary spaces
+  // which would artificially inflate the property's declared surface
+  if (row.lot1_surface_carrez && row.lot1_surface_carrez > 0) {
+    return row.lot1_surface_carrez;
+  }
+
+  // Last resort: check other lots individually (some DVF entries only have lot2+)
+  const fallback = [
     row.lot2_surface_carrez,
     row.lot3_surface_carrez,
     row.lot4_surface_carrez,
     row.lot5_surface_carrez,
-  ].filter((s): s is number => s != null && s > 0);
-  return carrez.length > 0 ? carrez.reduce((a, b) => a + b, 0) : null;
+  ].find((s): s is number => s != null && s > 0);
+
+  return fallback ?? null;
 }
 
 async function fetchPage(
@@ -116,12 +126,21 @@ export async function fetchDvfComparables(params: FetchDvfParams): Promise<Compa
 
       const existing = seenMutations.get(row.id_mutation);
       if (existing) {
-        if (
-          row.type_local === propertyType &&
-          (existing.type_local !== propertyType || surface > existing.surface)
-        ) {
+        // Only replace if the new entry is a BETTER match for the target type:
+        // 1. New is target type and existing isn't → replace
+        // 2. Both are target type and new has larger surface → replace
+        // Never let a non-target type (Dépendance, Local industriel) overwrite a target type
+        const newIsTarget = row.type_local === propertyType;
+        const existingIsTarget = existing.type_local === propertyType;
+
+        if (newIsTarget && !existingIsTarget) {
+          // New is target type, replace non-target entry
+          seenMutations.set(row.id_mutation, comparable);
+        } else if (newIsTarget && existingIsTarget && surface > existing.surface) {
+          // Both are target type, keep the larger one
           seenMutations.set(row.id_mutation, comparable);
         }
+        // Otherwise: keep existing (don't let non-target overwrite target)
       } else {
         seenMutations.set(row.id_mutation, comparable);
       }

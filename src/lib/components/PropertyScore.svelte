@@ -72,7 +72,8 @@
 
   const avgScore = $derived(() => {
     const s = scores();
-    return Math.round(s.reduce((acc, item) => acc + item.value, 0) / s.length);
+    if (s.length === 0) return 0;
+    return Math.round(s.reduce((acc: number, item: { value: number }) => acc + item.value, 0) / s.length);
   });
 
   const avgLabel = $derived(() => {

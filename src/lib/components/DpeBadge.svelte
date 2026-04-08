@@ -47,6 +47,9 @@
       {#if dpe.avg_conso_m2}
         <span class="text-xs text-navy/40">{dpe.avg_conso_m2} kWh/m&sup2;/an</span>
       {/if}
+      {#if dpe.fiabilite === 'indicatif'}
+        <span class="text-[10px] px-1.5 py-0.5 rounded-full bg-amber/10 text-amber font-medium">Indicatif</span>
+      {/if}
     </div>
     <div class="flex items-center gap-2">
       <!-- GES badge -->
