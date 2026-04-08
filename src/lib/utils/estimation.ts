@@ -4,12 +4,18 @@ import { config } from '$lib/config';
 // ─── Weights ────────────────────────────────────────────────────────────────
 
 export function assignWeights(dateMutation: string, distanceM: number): number {
-  const year = new Date(dateMutation).getFullYear();
+  const date = new Date(dateMutation);
+  const year = date.getFullYear();
   const recency =
     year >= 2025 ? 1.0 : year === 2024 ? 0.8 : year === 2023 ? 0.5 : 0.3;
   const proximity =
     distanceM < 200 ? 1.0 : distanceM < 500 ? 0.8 : distanceM < 1000 ? 0.5 : 0.3;
-  return recency * proximity;
+
+  // Covid period penalty: March 2020 – June 2021 had distorted prices
+  const isCovid = dateMutation >= '2020-03-01' && dateMutation <= '2021-06-30';
+  const covidPenalty = isCovid ? 0.5 : 1.0;
+
+  return recency * proximity * covidPenalty;
 }
 
 // ─── Weighted Percentile ────────────────────────────────────────────────────

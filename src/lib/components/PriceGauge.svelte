@@ -9,10 +9,12 @@
   let mounted = $state(false);
 
   const range = estimation.high_per_m2 - estimation.low_per_m2;
-  const padding = range * 0.15;
+  // Guard: if low === high (single comparable or identical prices), create artificial spread
+  const safeRange = range > 0 ? range : estimation.median_per_m2 * 0.1 || 1;
+  const padding = safeRange * 0.15;
   const displayMin = Math.max(0, estimation.low_per_m2 - padding);
   const displayMax = estimation.high_per_m2 + padding;
-  const displayRange = displayMax - displayMin;
+  const displayRange = displayMax - displayMin || 1; // final safety: never zero
 
   function toPercent(val: number): number {
     return ((val - displayMin) / displayRange) * 100;

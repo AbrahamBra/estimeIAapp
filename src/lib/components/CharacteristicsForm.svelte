@@ -32,21 +32,30 @@
     ],
   };
 
-  const baseCriteria: Criterion[] = [
+  // Outdoor options differ by property type:
+  // - Appartement: balcon, terrasse, loggia (no garden unless RDC, rare)
+  // - Maison: terrasse, jardin (no balcon/loggia — those are apartment features)
+  const outdoorAppartement = [
+    { value: 'none', label: 'Aucun' },
+    { value: 'balcony', label: 'Balcon' },
+    { value: 'terrace', label: 'Terrasse' },
+    { value: 'loggia', label: 'Loggia' },
+  ];
+  const outdoorMaison = [
+    { value: 'none', label: 'Aucun' },
+    { value: 'terrace', label: 'Terrasse' },
+    { value: 'garden', label: 'Jardin' },
+  ];
+
+  const baseCriteria: Criterion[] = $derived([
     {
-      key: 'outdoor',
+      key: 'outdoor' as keyof PropertyCharacteristics,
       label: 'Extérieur',
       icon: '🌿',
-      options: [
-        { value: 'none', label: 'Aucun' },
-        { value: 'balcony', label: 'Balcon' },
-        { value: 'terrace', label: 'Terrasse' },
-        { value: 'garden', label: 'Jardin' },
-        { value: 'loggia', label: 'Loggia' },
-      ],
+      options: isAppartement ? outdoorAppartement : outdoorMaison,
     },
     {
-      key: 'view',
+      key: 'view' as keyof PropertyCharacteristics,
       label: 'Vue',
       icon: '👁️',
       options: [
@@ -57,7 +66,7 @@
       ],
     },
     {
-      key: 'exposure',
+      key: 'exposure' as keyof PropertyCharacteristics,
       label: 'Exposition',
       icon: '☀️',
       options: [
@@ -68,7 +77,7 @@
       ],
     },
     {
-      key: 'condition',
+      key: 'condition' as keyof PropertyCharacteristics,
       label: 'État',
       icon: '🔧',
       options: [
@@ -79,7 +88,7 @@
       ],
     },
     {
-      key: 'parking',
+      key: 'parking' as keyof PropertyCharacteristics,
       label: 'Parking',
       icon: '🚗',
       options: [
@@ -90,7 +99,7 @@
       ],
     },
     {
-      key: 'noise',
+      key: 'noise' as keyof PropertyCharacteristics,
       label: 'Calme',
       icon: '🔇',
       options: [
@@ -100,7 +109,7 @@
         { value: 'very-quiet', label: 'Très calme' },
       ],
     },
-  ];
+  ]);
 
   // Merge criteria: floor only for apartments
   const criteria: Criterion[] = $derived(
@@ -113,11 +122,20 @@
 
   const showPool = $derived(propertyType === 'Maison');
 
-  // Reset floor/elevator when switching to Maison (defensive)
+  // Reset type-specific characteristics when switching property type
   $effect(() => {
     if (!isAppartement) {
       characteristics.floor = null;
       characteristics.elevator = null;
+      // Reset apartment-only outdoor values
+      if (characteristics.outdoor === 'balcony' || characteristics.outdoor === 'loggia') {
+        characteristics.outdoor = null;
+      }
+    } else {
+      // Reset house-only outdoor values
+      if (characteristics.outdoor === 'garden') {
+        characteristics.outdoor = null;
+      }
     }
   });
 

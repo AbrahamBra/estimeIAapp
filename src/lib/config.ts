@@ -41,7 +41,13 @@ export const config = {
   } as Record<string, string>,
 
   // Temporal price index (base 100 = 2025, approximation INSEE-Notaires France métropolitaine)
+  // Sources: indices Notaires-INSEE des prix des logements anciens
   TEMPORAL_INDEX: {
+    2014: 0.82,
+    2015: 0.81,
+    2016: 0.82,
+    2017: 0.84,
+    2018: 0.86,
     2019: 0.88,
     2020: 0.91,
     2021: 0.97,
@@ -49,7 +55,7 @@ export const config = {
     2023: 0.99,
     2024: 0.97,
     2025: 1.00,
-    2026: 1.01,
+    2026: 1.00, // pas de projection — même index que 2025 tant que données réelles indisponibles
   } as Record<number, number>,
 
   // Surface elasticity: price/m² decreases for larger surfaces (log-linear)
