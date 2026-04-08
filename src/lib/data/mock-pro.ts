@@ -1,17 +1,9 @@
 import type {
-  MockPermit,
   MockCadastreData,
   MockUrbanismeData,
   MockProprietaireData,
   MockCoproprieteData,
 } from '$lib/types';
-
-export const mockPermits: MockPermit[] = [
-  { date: '2025-09-14', type: 'construction', address: '12 rue des ••••••', surface_m2: 185 },
-  { date: '2025-06-03', type: 'extension', address: '8 avenue ••••••', surface_m2: 42 },
-  { date: '2024-11-22', type: 'amenagement', address: '3 bd ••••••', surface_m2: 95 },
-  { date: '2024-08-10', type: 'demolition', address: '17 rue ••••••', surface_m2: 120 },
-];
 
 export const mockCadastre: MockCadastreData = {
   reference: 'AK 0142',

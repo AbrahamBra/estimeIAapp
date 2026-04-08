@@ -1,38 +1,13 @@
 import type { CommuneContext } from '$lib/types';
+import { postcodeToArrondissement, postcodeToMainCommune } from './insee';
 
 const API_GEO = 'https://geo.api.gouv.fr';
 const HUBEAU_API = 'https://hubeau.eaufrance.fr/api/v1/qualite_eau_potable';
 const FISCAL_API = 'https://data.economie.gouv.fr/api/explore/v2.1/catalog/datasets/fiscalite-locale-des-particuliers/records';
 
-/**
- * Convert postcode to arrondissement code for API Geo (Paris/Lyon/Marseille).
- * Paris: 75007 → 75107, Lyon: 69003 → 69383, Marseille: 13005 → 13205.
- */
-function postcodeToGeoCode(postcode: string): string {
-  const dept = postcode.substring(0, 2);
-  const suffix = parseInt(postcode.substring(2));
-
-  if (dept === '75') return `751${postcode.substring(3).padStart(2, '0')}`;
-  if (dept === '69' && suffix >= 1 && suffix <= 9) return `6938${suffix}`;
-  if (dept === '13' && suffix >= 1 && suffix <= 16) return `132${suffix.toString().padStart(2, '0')}`;
-
-  return postcode;
-}
-
-/**
- * For Hub'Eau and Fiscalité — use the main commune code for multi-arrondissement cities.
- */
-function postcodeToMainInsee(postcode: string): string {
-  const dept = postcode.substring(0, 2);
-  if (dept === '75') return '75056';
-  if (dept === '69' && parseInt(postcode.substring(2)) <= 9) return '69123';
-  if (dept === '13' && parseInt(postcode.substring(2)) <= 16) return '13055';
-  return postcode;
-}
-
 async function fetchPopulation(postcode: string): Promise<{ population: number | null; density: number | null }> {
   try {
-    const code = postcodeToGeoCode(postcode);
+    const code = postcodeToArrondissement(postcode);
     const res = await fetch(`${API_GEO}/communes/${code}?fields=population,surface`);
     if (!res.ok) {
       // Fallback: search by postal code
@@ -55,7 +30,7 @@ async function fetchPopulation(postcode: string): Promise<{ population: number |
 
 async function fetchTaxRates(postcode: string): Promise<{ taxe_fonciere: number | null; teom: number | null }> {
   try {
-    const insee = postcodeToMainInsee(postcode);
+    const insee = postcodeToMainCommune(postcode);
     const url = `${FISCAL_API}?where=insee_com="${insee}"&order_by=exercice DESC&limit=1&select=taux_global_tfb,taux_plein_teom`;
     const res = await fetch(url);
     if (!res.ok) return { taxe_fonciere: null, teom: null };
@@ -77,7 +52,7 @@ async function fetchWaterQuality(postcode: string): Promise<{
   water_conform_pct: number | null;
 }> {
   try {
-    const insee = postcodeToMainInsee(postcode);
+    const insee = postcodeToMainCommune(postcode);
     const url = `${HUBEAU_API}/resultats_dis?code_commune=${insee}&size=100&fields=conclusion_conformite_limites_bact_prelevement,conclusion_conformite_limites_pc_prelevement&sort=desc`;
     const res = await fetch(url);
     if (!res.ok) return { water_quality: null, water_analyses: null, water_conform_pct: null };

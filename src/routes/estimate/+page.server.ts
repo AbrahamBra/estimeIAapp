@@ -5,6 +5,9 @@ import { lookupProximity } from '$lib/api/proximity';
 import { fetchDpeNearby } from '$lib/api/dpe';
 import { fetchRisks } from '$lib/api/georisques';
 import { fetchCommuneContext } from '$lib/api/commune';
+import { fetchRentEstimate } from '$lib/api/loyers';
+import { fetchPermits } from '$lib/api/permits';
+import { postcodeToArrondissement, postcodeToMainCommune, postcodeToInsee } from '$lib/api/insee';
 import { config } from '$lib/config';
 import { parseCharacteristics, computeCharacteristicsCoefficient } from '$lib/config/coefficients';
 import { applyCoefficient } from '$lib/utils/estimation';
@@ -91,12 +94,18 @@ export const load: PageServerLoad = async ({ url }) => {
 
   const trend = computeTrend(comparables);
 
-  // Fetch proximity, DPE, risks, and commune context in parallel
-  const [proximity, dpe, risks, communeCtx] = await Promise.all([
+  // Resolve INSEE codes for loyers (arrondissement) and permits (main commune)
+  const inseeArrondissement = postcodeToArrondissement(postcode);
+  const inseeMainCommune = postcodeToMainCommune(postcode);
+
+  // Fetch all external data in parallel
+  const [proximity, dpe, risks, communeCtx, rentData, permits] = await Promise.all([
     Promise.resolve(lookupProximity(dept, lat, lon, 1000)),
     fetchDpeNearby(address, postcode),
     fetchRisks(postcode),
     fetchCommuneContext(postcode),
+    fetchRentEstimate(inseeArrondissement, propertyType, surfaceM2, estimation?.median_per_m2 ?? null),
+    fetchPermits(inseeMainCommune),
   ]);
 
   return {
@@ -119,5 +128,7 @@ export const load: PageServerLoad = async ({ url }) => {
     dpe,
     risks,
     communeCtx,
+    rentEstimate: rentData,
+    permits,
   };
 };

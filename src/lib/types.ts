@@ -130,13 +130,33 @@ export interface CharacteristicsResult {
 
 // === Pro Features (locked/mock) ===
 
-export type ProFeature = 'permits' | 'cadastre' | 'urbanisme' | 'proprietaires' | 'copropriete';
+export type ProFeature = 'cadastre' | 'urbanisme' | 'proprietaires' | 'copropriete';
 
-export interface MockPermit {
+export interface RentEstimate {
+  loyer_m2: number;
+  loyer_m2_low: number;
+  loyer_m2_high: number;
+  loyer_mensuel: number | null;
+  rendement_brut: number | null;
+  source_annonces: number;
+  fiabilite: 'indicatif' | 'fiable' | 'tres_fiable';
+}
+
+export interface PermitRecord {
   date: string;
-  type: 'construction' | 'extension' | 'demolition' | 'amenagement';
-  address: string;
-  surface_m2: number;
+  type_dau: 'PC' | 'DP';
+  nb_logements: number;
+  surface_hab: number;
+  adresse: string;
+}
+
+export interface PermitsResult {
+  total_permits: number;
+  total_logements: number;
+  individual_pct: number;
+  collective_pct: number;
+  pression: 'faible' | 'moyenne' | 'forte';
+  permits: PermitRecord[];
 }
 
 export interface MockCadastreData {

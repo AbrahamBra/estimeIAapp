@@ -18,7 +18,8 @@
   import type { Comparable, ProFeature } from '$lib/types';
   import LockedFeature from '$lib/components/LockedFeature.svelte';
   import WaitlistModal from '$lib/components/WaitlistModal.svelte';
-  import MockPermits from '$lib/components/MockPermits.svelte';
+  import RentEstimateBadge from '$lib/components/RentEstimate.svelte';
+  import PermitsBadge from '$lib/components/PermitsBadge.svelte';
   import MockCadastre from '$lib/components/MockCadastre.svelte';
   import MockUrbanisme from '$lib/components/MockUrbanisme.svelte';
   import MockProprietaires from '$lib/components/MockProprietaires.svelte';
@@ -29,7 +30,7 @@
   let mounted = $state(false);
   let excludeCovid = $state(false);
   let showWaitlist = $state(false);
-  let waitlistFeature: ProFeature = $state('permits');
+  let waitlistFeature: ProFeature = $state('cadastre');
 
   function openWaitlist(feature: ProFeature) {
     waitlistFeature = feature;
@@ -292,6 +293,20 @@
         <ProximityBadges proximity={data.proximity} />
       </div>
 
+      <!-- Rent estimate -->
+      {#if data.rentEstimate}
+        <div class="mb-6">
+          <RentEstimateBadge rent={data.rentEstimate} />
+        </div>
+      {/if}
+
+      <!-- Building permits -->
+      {#if data.permits}
+        <div class="mb-6">
+          <PermitsBadge permits={data.permits} />
+        </div>
+      {/if}
+
       <!-- Commune context -->
       {#if data.communeCtx}
         <CommuneContext commune={data.communeCtx} />
@@ -309,10 +324,6 @@
       </div>
 
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <LockedFeature title="Permis de construire" teaser="4 permis délivrés dans un rayon de 500m ces 2 dernières années" feature="permits" onunlock={openWaitlist}>
-          <MockPermits />
-        </LockedFeature>
-
         <LockedFeature title="Données cadastrales" teaser="Surface terrain : 485 m² — Ratio terrain/bâti : 3.4" feature="cadastre" onunlock={openWaitlist}>
           <MockCadastre />
         </LockedFeature>
