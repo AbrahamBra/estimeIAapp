@@ -7,6 +7,9 @@ import { fetchRisks } from '$lib/api/georisques';
 import { fetchCommuneContext } from '$lib/api/commune';
 import { fetchRentEstimate } from '$lib/api/loyers';
 import { fetchPermits } from '$lib/api/permits';
+import { fetchCadastre } from '$lib/api/cadastre';
+import { fetchUrbanisme } from '$lib/api/urbanisme';
+import { fetchCopropriete } from '$lib/api/copropriete';
 import { postcodeToArrondissement, postcodeToMainCommune, postcodeToInsee } from '$lib/api/insee';
 import { config } from '$lib/config';
 import { parseCharacteristics, computeCharacteristicsCoefficient } from '$lib/config/coefficients';
@@ -98,15 +101,22 @@ export const load: PageServerLoad = async ({ url }) => {
   const inseeArrondissement = postcodeToArrondissement(postcode);
   const inseeMainCommune = postcodeToMainCommune(postcode);
 
-  // Fetch all external data in parallel
-  const [proximity, dpe, risks, communeCtx, rentData, permits] = await Promise.all([
+  // Fetch all external data in parallel (cadastre + urbanisme are independent)
+  const [proximity, dpe, risks, communeCtx, rentData, permits, cadastre, urbanisme] = await Promise.all([
     Promise.resolve(lookupProximity(dept, lat, lon, 1000)),
     fetchDpeNearby(address, postcode),
     fetchRisks(postcode),
     fetchCommuneContext(postcode),
     fetchRentEstimate(inseeArrondissement, propertyType, surfaceM2, estimation?.median_per_m2 ?? null),
     fetchPermits(inseeMainCommune),
+    fetchCadastre(lat, lon),
+    fetchUrbanisme(lat, lon),
   ]);
+
+  // Copropriete depends on cadastre result (needs reference_cadastrale for RNIC lookup)
+  const copropriete = cadastre?.reference_cadastrale
+    ? await fetchCopropriete(cadastre.reference_cadastrale)
+    : null;
 
   return {
     address,
@@ -130,5 +140,8 @@ export const load: PageServerLoad = async ({ url }) => {
     communeCtx,
     rentEstimate: rentData,
     permits,
+    cadastre,
+    urbanisme,
+    copropriete,
   };
 };

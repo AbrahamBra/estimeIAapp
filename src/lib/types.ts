@@ -130,7 +130,7 @@ export interface CharacteristicsResult {
 
 // === Pro Features (locked/mock) ===
 
-export type ProFeature = 'cadastre' | 'urbanisme' | 'proprietaires' | 'copropriete';
+export type ProFeature = 'proprietaires';
 
 export interface RentEstimate {
   loyer_m2: number;
@@ -159,31 +159,35 @@ export interface PermitsResult {
   permits: PermitRecord[];
 }
 
-export interface MockCadastreData {
-  reference: string;
-  surface_terrain: number;
-  surface_batie: number;
-  ratio: number;
-}
-
-export interface MockUrbanismeData {
-  zone: string;
-  zone_label: string;
-  cos: number;
-  emprise: number;
-  hauteur_max: string;
-  recul: string;
-}
-
 export interface MockProprietaireData {
   type: 'SCI' | 'personne_physique' | 'bailleur_social';
   nom: string;
   date_acquisition: string;
 }
 
-export interface MockCoproprieteData {
-  lots: number;
-  batiments: number;
-  syndic: string;
-  charges_moy_m2: number;
+export interface CadastreResult {
+  reference: string;
+  reference_cadastrale: string;
+  surface_terrain: number;
+  code_insee: string;
+  code_arr: string;
+  section: string;
+  numero: string;
+}
+
+export interface UrbanismeResult {
+  typezone: string;
+  libelle: string;
+  libelong: string;
+  destdomi: string | null;
+  document: string;
+}
+
+export interface CoproprieteResult {
+  nom: string;
+  lots_total: number;
+  lots_habitation: number;
+  lots_stationnement: number;
+  periode_construction: string;
+  type_syndic: string | null;
 }

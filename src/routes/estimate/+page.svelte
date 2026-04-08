@@ -20,17 +20,17 @@
   import WaitlistModal from '$lib/components/WaitlistModal.svelte';
   import RentEstimateBadge from '$lib/components/RentEstimate.svelte';
   import PermitsBadge from '$lib/components/PermitsBadge.svelte';
-  import MockCadastre from '$lib/components/MockCadastre.svelte';
-  import MockUrbanisme from '$lib/components/MockUrbanisme.svelte';
+  import CadastreBadge from '$lib/components/CadastreBadge.svelte';
+  import UrbanismeBadge from '$lib/components/UrbanismeBadge.svelte';
+  import CoproprieteBadge from '$lib/components/CoproprieteBadge.svelte';
   import MockProprietaires from '$lib/components/MockProprietaires.svelte';
-  import MockCopropriete from '$lib/components/MockCopropriete.svelte';
 
   let { data } = $props();
   let selectedComparable: Comparable | null = $state(null);
   let mounted = $state(false);
   let excludeCovid = $state(false);
   let showWaitlist = $state(false);
-  let waitlistFeature: ProFeature = $state('cadastre');
+  let waitlistFeature: ProFeature = $state('proprietaires');
 
   function openWaitlist(feature: ProFeature) {
     waitlistFeature = feature;
@@ -309,7 +309,28 @@
 
       <!-- Commune context -->
       {#if data.communeCtx}
-        <CommuneContext commune={data.communeCtx} />
+        <div class="mb-6">
+          <CommuneContext commune={data.communeCtx} />
+        </div>
+      {/if}
+
+      <!-- Cadastre -->
+      {#if data.cadastre}
+        <div class="mb-6">
+          <CadastreBadge cadastre={data.cadastre} surfaceM2={data.surfaceM2} />
+        </div>
+      {/if}
+
+      <!-- Urbanisme PLU -->
+      {#if data.urbanisme}
+        <div class="mb-6">
+          <UrbanismeBadge urbanisme={data.urbanisme} />
+        </div>
+      {/if}
+
+      <!-- Copropriété -->
+      {#if data.copropriete}
+        <CoproprieteBadge copropriete={data.copropriete} />
       {/if}
     </section>
 
@@ -323,21 +344,9 @@
         >PRO</span>
       </div>
 
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <LockedFeature title="Données cadastrales" teaser="Surface terrain : 485 m² — Ratio terrain/bâti : 3.4" feature="cadastre" onunlock={openWaitlist}>
-          <MockCadastre />
-        </LockedFeature>
-
-        <LockedFeature title="Urbanisme & PLU" teaser="Zone UA — Constructibilité et règles d'urbanisme" feature="urbanisme" onunlock={openWaitlist}>
-          <MockUrbanisme />
-        </LockedFeature>
-
+      <div class="max-w-md mx-auto">
         <LockedFeature title="Propriétaire" teaser="Propriétaire identifié — SCI ••••••" feature="proprietaires" onunlock={openWaitlist}>
           <MockProprietaires />
-        </LockedFeature>
-
-        <LockedFeature title="Copropriété" teaser="Copropriété de 24 lots — Charges moyennes : 32€/m²/an" feature="copropriete" onunlock={openWaitlist}>
-          <MockCopropriete />
         </LockedFeature>
       </div>
     </section>
