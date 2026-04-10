@@ -3,6 +3,7 @@
   import { page } from '$app/stores';
   import CharacteristicsForm from '$lib/components/CharacteristicsForm.svelte';
   import CharacteristicsImpactPreview from '$lib/components/CharacteristicsImpactPreview.svelte';
+  import AnalysisOverlay from '$lib/components/AnalysisOverlay.svelte';
   import { parseCharacteristics } from '$lib/config/coefficients';
   import type { PropertyCharacteristics } from '$lib/types';
 
@@ -15,7 +16,11 @@
     parseCharacteristics(new URLSearchParams($page.url.search))
   );
 
-  const CHAR_KEYS = ['floor', 'elevator', 'outdoor', 'view', 'exposure', 'condition', 'parking', 'noise', 'pool'];
+  let showAnalysis = $state(false);
+  let overlayRef: { markNavigationDone: () => void } | undefined = $state();
+  let pendingUrl = $state('');
+
+  const CHAR_KEYS = ['floor', 'elevator', 'outdoor', 'view', 'exposure', 'condition', 'parking', 'noise', 'pool', 'cave', 'heating', 'brightness', 'standing', 'building_period'];
 
   function buildEstimateUrl(includeChars: boolean): string {
     const out = new URLSearchParams();
@@ -37,12 +42,26 @@
     return `/estimate?${out.toString()}`;
   }
 
+  function startAnalysis(includeChars: boolean) {
+    pendingUrl = buildEstimateUrl(includeChars);
+    showAnalysis = true;
+
+    // Start the actual navigation in the background (SvelteKit prefetches)
+    // The server load() runs while the overlay animates
+    fetch(pendingUrl, { headers: { 'purpose': 'prefetch' } }).catch(() => {});
+  }
+
   function skip() {
-    goto(buildEstimateUrl(false));
+    startAnalysis(false);
   }
 
   function submit() {
-    goto(buildEstimateUrl(true));
+    startAnalysis(true);
+  }
+
+  function handleAnalysisComplete() {
+    // Navigate to the results page (should be instant if prefetched)
+    goto(pendingUrl);
   }
 </script>
 
@@ -148,4 +167,10 @@
       </svg>
     </button>
   </div>
+
+  <!-- Analysis overlay -->
+  <AnalysisOverlay
+    bind:open={showAnalysis}
+    onComplete={handleAnalysisComplete}
+  />
 </div>
