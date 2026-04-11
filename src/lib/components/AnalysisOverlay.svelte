@@ -14,96 +14,104 @@
     delayMs: number;
   }
 
+  // ~3s per step, sequential — total ~45s animation
+  const STEP_DURATION = 3000;
+
   const steps: AnalysisStep[] = [
+    // 1. Localisation & identification du bien
     {
       title: 'Geocodage de l\'adresse',
       subtitle: 'API BAN — Base Adresse Nationale',
       icon: 'pin',
-      delayMs: 300,
-    },
-    {
-      title: 'Recherche des ventes DVF',
-      subtitle: 'Demandes de Valeur Fonciere (DGFiP) — 5 dernieres annees',
-      icon: 'database',
-      delayMs: 600,
-    },
-    {
-      title: 'Filtrage des comparables',
-      subtitle: 'Exclusion des mutations atypiques (IQR), ventes Covid ponderees x0.5',
-      icon: 'filter',
-      delayMs: 900,
-    },
-    {
-      title: 'Correction temporelle des prix',
-      subtitle: 'Indexation INSEE-Notaires — base 2025, couverture 2014-2026',
-      icon: 'clock',
-      delayMs: 1200,
-    },
-    {
-      title: 'Ajustement elasticite surface',
-      subtitle: 'Modele log-lineaire prix/m\u00b2 vs surface reelle Carrez',
-      icon: 'ruler',
-      delayMs: 1500,
-    },
-    {
-      title: 'Diagnostic de Performance Energetique',
-      subtitle: 'ADEME — etiquette DPE dominante du quartier',
-      icon: 'energy',
-      delayMs: 1800,
-    },
-    {
-      title: 'Correction DPE sur le prix',
-      subtitle: 'Impact valorisation A (+6%) a decote G (-20%) — ref. Notaires de France',
-      icon: 'adjust',
-      delayMs: 2100,
-    },
-    {
-      title: 'Calcul de la marge d\'erreur',
-      subtitle: 'Validation croisee leave-one-out (MAPE) sur les comparables',
-      icon: 'target',
-      delayMs: 2400,
-    },
-    {
-      title: 'Analyse des risques naturels',
-      subtitle: 'Georisques — CatNat, inondations, seismes, mouvements de terrain',
-      icon: 'shield',
-      delayMs: 2700,
-    },
-    {
-      title: 'Estimation du rendement locatif',
-      subtitle: 'Carte des Loyers 2025 — rendement brut annuel, indice de fiabilite',
-      icon: 'chart',
-      delayMs: 3000,
-    },
-    {
-      title: 'Permis de construire recents',
-      subtitle: 'SITADEL — pression immobiliere communale, logements autorises',
-      icon: 'building',
-      delayMs: 3300,
+      delayMs: STEP_DURATION * 0,
     },
     {
       title: 'Donnees cadastrales',
       subtitle: 'IGN API Carto — reference parcellaire, surface terrain',
       icon: 'map',
-      delayMs: 3500,
+      delayMs: STEP_DURATION * 1,
     },
     {
       title: 'Zonage PLU',
       subtitle: 'GPU — zone urbaine, constructibilite, document d\'urbanisme',
       icon: 'zone',
-      delayMs: 3700,
+      delayMs: STEP_DURATION * 2,
+    },
+    // 2. Collecte des transactions
+    {
+      title: 'Recherche des ventes DVF',
+      subtitle: 'Demandes de Valeur Fonciere (DGFiP) — 5 dernieres annees',
+      icon: 'database',
+      delayMs: STEP_DURATION * 3,
+    },
+    {
+      title: 'Filtrage des comparables',
+      subtitle: 'Exclusion des mutations atypiques (IQR), ventes Covid ponderees x0.5',
+      icon: 'filter',
+      delayMs: STEP_DURATION * 4,
+    },
+    // 3. Corrections & ajustements de prix
+    {
+      title: 'Correction temporelle des prix',
+      subtitle: 'Indexation INSEE-Notaires — base 2025, couverture 2014-2026',
+      icon: 'clock',
+      delayMs: STEP_DURATION * 5,
+    },
+    {
+      title: 'Ajustement elasticite surface',
+      subtitle: 'Modele log-lineaire prix/m\u00b2 vs surface reelle Carrez',
+      icon: 'ruler',
+      delayMs: STEP_DURATION * 6,
+    },
+    {
+      title: 'Diagnostic de Performance Energetique',
+      subtitle: 'ADEME — etiquette DPE dominante du quartier',
+      icon: 'energy',
+      delayMs: STEP_DURATION * 7,
+    },
+    {
+      title: 'Correction DPE sur le prix',
+      subtitle: 'Impact valorisation A (+6%) a decote G (-20%) — ref. Notaires de France',
+      icon: 'adjust',
+      delayMs: STEP_DURATION * 8,
+    },
+    // 4. Analyse du contexte environnant
+    {
+      title: 'Analyse des risques naturels',
+      subtitle: 'Georisques — CatNat, inondations, seismes, mouvements de terrain',
+      icon: 'shield',
+      delayMs: STEP_DURATION * 9,
+    },
+    {
+      title: 'Permis de construire recents',
+      subtitle: 'SITADEL — pression immobiliere communale, logements autorises',
+      icon: 'building',
+      delayMs: STEP_DURATION * 10,
     },
     {
       title: 'Verification copropriete',
       subtitle: 'RNIC — lots, syndic, periode de construction',
       icon: 'people',
-      delayMs: 3900,
+      delayMs: STEP_DURATION * 11,
+    },
+    // 5. Valorisation & scoring final
+    {
+      title: 'Estimation du rendement locatif',
+      subtitle: 'Carte des Loyers 2025 — rendement brut annuel, indice de fiabilite',
+      icon: 'chart',
+      delayMs: STEP_DURATION * 12,
+    },
+    {
+      title: 'Calcul de la marge d\'erreur',
+      subtitle: 'Validation croisee leave-one-out (MAPE) sur les comparables',
+      icon: 'target',
+      delayMs: STEP_DURATION * 13,
     },
     {
       title: 'Scoring de confiance',
       subtitle: '5 facteurs : volume, coherence, recence, proximite, DPE',
       icon: 'score',
-      delayMs: 4100,
+      delayMs: STEP_DURATION * 14,
     },
   ];
 
@@ -160,23 +168,15 @@
         currentStep = targetStep;
       }
 
-      // If navigation is done and we're near the end, fast-forward
-      if (navigationDone && currentStep >= steps.length - 3) {
+      // All steps shown and navigation done — complete
+      if (currentStep >= steps.length - 1 && navigationDone) {
         finishing = true;
-        currentStep = steps.length - 1;
         setTimeout(completeOnce, 600);
         return;
       }
 
-      // If we've shown all steps and navigation is done, complete
-      if (currentStep >= steps.length - 1 && navigationDone) {
-        finishing = true;
-        setTimeout(completeOnce, 400);
-        return;
-      }
-
-      // Safety: if it's been >8s, force-complete
-      if (elapsed > 8000) {
+      // Safety: force-complete after full animation + buffer
+      if (elapsed > STEP_DURATION * steps.length + 3000) {
         finishing = true;
         setTimeout(completeOnce, 200);
         return;
@@ -219,7 +219,7 @@
           </div>
           <div>
             <h2 class="font-display text-base font-bold text-navy">Analyse en cours</h2>
-            <p class="text-xs text-navy/40">Croisement de 12 bases de donnees officielles</p>
+            <p class="text-xs text-navy/40">Croisement de 15 bases de donnees officielles</p>
           </div>
         </div>
 
