@@ -1,6 +1,4 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
-
   let {
     open = $bindable(false),
     onComplete,
@@ -112,21 +110,39 @@
   let currentStep = $state(-1);
   let navigationDone = $state(false);
   let finishing = $state(false);
+  let completeCalled = false;
   let intervalId: ReturnType<typeof setInterval> | null = null;
   let startTime = 0;
-
-  function getIcon(icon: string, status: 'done' | 'active' | 'pending'): string {
-    if (status === 'done') return 'check';
-    if (status === 'active') return 'spinner';
-    return icon;
-  }
 
   export function markNavigationDone() {
     navigationDone = true;
   }
 
-  onMount(() => {
-    if (!open) return;
+  function completeOnce() {
+    if (completeCalled) return;
+    completeCalled = true;
+    if (intervalId) {
+      clearInterval(intervalId);
+      intervalId = null;
+    }
+    onComplete();
+  }
+
+  $effect(() => {
+    if (!open) {
+      // Reset state when overlay closes
+      currentStep = -1;
+      navigationDone = false;
+      finishing = false;
+      completeCalled = false;
+      if (intervalId) {
+        clearInterval(intervalId);
+        intervalId = null;
+      }
+      return;
+    }
+
+    // Overlay just opened — start the animation
     startTime = Date.now();
 
     intervalId = setInterval(() => {
@@ -148,33 +164,30 @@
       if (navigationDone && currentStep >= steps.length - 3) {
         finishing = true;
         currentStep = steps.length - 1;
-        setTimeout(() => {
-          if (intervalId) clearInterval(intervalId);
-          onComplete();
-        }, 600);
+        setTimeout(completeOnce, 600);
+        return;
       }
 
       // If we've shown all steps and navigation is done, complete
       if (currentStep >= steps.length - 1 && navigationDone) {
         finishing = true;
-        setTimeout(() => {
-          if (intervalId) clearInterval(intervalId);
-          onComplete();
-        }, 400);
+        setTimeout(completeOnce, 400);
+        return;
       }
 
       // Safety: if it's been >8s, force-complete
       if (elapsed > 8000) {
         finishing = true;
-        setTimeout(() => {
-          if (intervalId) clearInterval(intervalId);
-          onComplete();
-        }, 200);
+        setTimeout(completeOnce, 200);
+        return;
       }
     }, 150);
 
     return () => {
-      if (intervalId) clearInterval(intervalId);
+      if (intervalId) {
+        clearInterval(intervalId);
+        intervalId = null;
+      }
     };
   });
 

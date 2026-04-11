@@ -48,7 +48,9 @@
 
     // Start the actual navigation in the background (SvelteKit prefetches)
     // The server load() runs while the overlay animates
-    fetch(pendingUrl, { headers: { 'purpose': 'prefetch' } }).catch(() => {});
+    fetch(pendingUrl, { headers: { 'purpose': 'prefetch' } })
+      .then(() => overlayRef?.markNavigationDone())
+      .catch(() => overlayRef?.markNavigationDone());
   }
 
   function skip() {
@@ -171,6 +173,7 @@
   <!-- Analysis overlay -->
   <AnalysisOverlay
     bind:open={showAnalysis}
+    bind:this={overlayRef}
     onComplete={handleAnalysisComplete}
   />
 </div>
